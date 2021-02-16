@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+  <center>
+  {% for item in search_results %}
+  <tr>
+  <td> {{item[0]}} by {{item[1]}}</td>
+  </br>
+  </tr>
+  {% endfor %}
+  </center>
+
+{% endblock %}
