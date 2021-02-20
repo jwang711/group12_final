@@ -72,15 +72,6 @@
         {% if search_results %}
         <input type="hidden" name="movie_id" value = "{{search_results[0]}}">
         {% endif %}
-
-        <!-- {% from "includes/_formhelpers.html" import render_field %}
-        <p style="font-size:15px">Not what you looking for?</p>
-        <form method="POST" action="">
-          <div class="form-group">
-            {{render_field(form.title, class_="form-control")}}
-          </div>
-          <input type="submit" class="navbar-brand" value="Search">
-        </form> -->
         {% endblock %}
       </div>
     </div>

@@ -2,7 +2,6 @@ from flask import Flask, render_template, flash, redirect, url_for, session, req
 from db_connector import connect_to_database, execute_query
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators, IntegerField
 from passlib.hash import sha256_crypt
-# from functools import wraps
 
 app = Flask(__name__)
 app.secret_key='thisissecretdontshare'
@@ -113,11 +112,11 @@ def dashboard():
     db_connection = connect_to_database()
     people_query = "SELECT name,email FROM reviewers WHERE username = %s"
     people_result = execute_query(db_connection, people_query,[session['username']]).fetchone()
-    print(people_result,people_result[0],people_result[1])
+    # print(people_result,people_result[0],people_result[1])
 
     rating_query = "SELECT title,rating,review,ratingDate FROM ratings inner join movies on ratings.movieId  = movies.movieId where reviewerId in (SELECT reviewerId FROM reviewers WHERE username = %s)"
     rating_result = execute_query(db_connection, rating_query,[session['username']]).fetchall()
-    print(rating_result)
+    # print(rating_result)
     if rating_result:
         return render_template('dashboard.html',results=rating_result)
 
@@ -168,7 +167,7 @@ def add_movie():
 
         flash('Movie added!', 'success')
 
-        return redirect(url_for('movies'))
+        return redirect(url_for('movie'))
 
     return render_template('add_movie.html', form=form)
 
@@ -178,7 +177,7 @@ def add_movie():
 def user_reviews():
     db_connection = connect_to_database()
     rating_query = 'SELECT ratings.movieId,rating,title,username,ratingDate,review FROM ratings inner join movies ON ratings.movieId = movies.movieId inner join reviewers on reviewers.reviewerId = ratings.reviewerId'
-    print(rating_query)
+    # print(rating_query)
     results = execute_query(db_connection, rating_query).fetchall()
     return render_template('user_reviews.html', rows=results)
 
@@ -187,9 +186,9 @@ def user_reviews():
 def view_rating(movieId):
     db_connection = connect_to_database()
     view_query = "SELECT reviewers.username,rating,review FROM reviewers inner join ratings ON reviewers.reviewerId = ratings.reviewerId WHERE movieId = %s"  % (movieId)
-    print(view_query)
+    # print(view_query)
     selectedmovie = "SELECT title,budget,avgRating,genre,boxOffice,year FROM movies WHERE movieId = %s"  % (movieId)
-    print(selectedmovie)
+    # print(selectedmovie)
     results1 = execute_query(db_connection, view_query)
     results2 = execute_query(db_connection, selectedmovie)
     return render_template('view_rating.html', results1=results1, results2=results2)
