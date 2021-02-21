@@ -193,6 +193,25 @@ def view_rating(movieId):
     results2 = execute_query(db_connection, selectedmovie)
     return render_template('view_rating.html', results1=results1, results2=results2)
 
+@app.route('/director')
+def director():
+    db_connection = connect_to_database()
+    dir_query = "SELECT directorId, CONCAT(firstName, ' ', lastName) as dir_name FROM directors"
+    dir_results = execute_query(db_connection, dir_query).fetchall()
+    for row in dir_results:
+        print(row)
+    return render_template('director.html', rows=dir_results)
+@app.route('/director/<int:directorId>')
+def view_dir(directorId):
+    db_connection = connect_to_database()
+    view_mov_query = "SELECT movies.movieId, movies.title FROM movies JOIN dir_mov ON movies.movieId = dir_mov.movieId JOIN directors ON dir_mov.directorId = directors.directorId WHERE directors.directorId = %s" % (directorId)
+    view_act_query = "SELECT actors.actorId, CONCAT(actors.firstName, ' ', actors.lastName) as act_name FROM actors JOIN dir_act ON actors.actorId = dir_act.actorId LEFT JOIN directors ON dir_act.directorId = directors.directorId WHERE directors.directorId = %s"  % (directorId)
+    # print(selectedmovie)
+    mov_results = execute_query(db_connection, view_mov_query)
+    act_results = execute_query(db_connection, view_act_query)
+    return render_template('view_director.html', mov_results=mov_results, act_results=act_results)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 
