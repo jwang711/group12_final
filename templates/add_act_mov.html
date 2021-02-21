@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+  <h1>Add Movie to Actor's Work</h1>
+  {% if session.logged_in != NULL %}
+  <a class="btn btn-success" href="/add_act_mov/{{id}}"> Add Movie</a>
+  {% else %}
+  <a class="btn btn-success" href="/login">Log in to add a movie</a>
+  {% endif %}
+  <hr>
+  
+  {% from "includes/_formhelpers.html" import render_field %}
+  <form method="POST" action="">
+    <div class="form-group">
+      {{render_field(form.movTitle, class_="form-control") }}
+    </div>
+    <p><input class="btn btn-primary" type="submit" value="Submit">
+  </form>
+{% endblock %}
