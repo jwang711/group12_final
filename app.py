@@ -2,6 +2,7 @@ from flask import Flask, render_template, flash, redirect, url_for, session, req
 from db_connector import connect_to_database, execute_query
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators, IntegerField
 from passlib.hash import sha256_crypt
+from datetime import date
 
 app = Flask(__name__)
 app.secret_key='thisissecretdontshare'
@@ -118,9 +119,9 @@ def dashboard():
     rating_result = execute_query(db_connection, rating_query,[session['username']]).fetchall()
     # print(rating_result)
     if rating_result:
-        return render_template('dashboard.html', results=rating_result, rows=people_result)
+        return render_template('dashboard.html',results=rating_result)
 
-    return render_template('dashboard.html', rows=people_result)
+    return render_template('dashboard.html',rows=people_result)
 
 # Movie Form Class
 #reference: https://flask.palletsprojects.com/en/1.1.x/patterns/wtforms/
