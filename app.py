@@ -119,7 +119,7 @@ def dashboard():
     rating_result = execute_query(db_connection, rating_query,[session['username']]).fetchall()
     # print(rating_result)
     if rating_result:
-        return render_template('dashboard.html',results=rating_result)
+        return render_template('dashboard.html',results=rating_result, rows=people_query)
 
     return render_template('dashboard.html',rows=people_result)
 
