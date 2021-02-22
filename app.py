@@ -197,7 +197,7 @@ def add_review(movieId):
         newReview = "INSERT INTO ratings (movieId, reviewerId, ratingDate, rating, review) VALUES (%s, (SELECT reviewerId FROM reviewers WHERE username = %s), CURDATE(), %s, %s)"
         data = (movieId, [session['username']], rating, review)
         execute_query(db_connection, newReview, data)
-        return redirect('user_reviews')
+        return view_rating(movieId)
     return render_template('add_review.html', form=form)
 
 @app.route('/view_rating/<int:movieId>')
