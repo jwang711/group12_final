@@ -1,14 +1,8 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-  <h1>ADD MOVIE</h1>
-  {% if session.logged_in != NULL %}
-  <a class="btn btn-success" href="/add_movie"> Add Movie</a>
-  {% else %}
-  <a class="btn btn-success" href="/login">Log in to add a movie</a>
-  {% endif %}
-  <hr>
-  
+  <h1>Add Movie</h1>
+
   {% from "includes/_formhelpers.html" import render_field %}
   <form method="POST" action="">
     <div class="form-group">
