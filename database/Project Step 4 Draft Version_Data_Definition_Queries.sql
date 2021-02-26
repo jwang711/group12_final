@@ -17,13 +17,13 @@
 
 
 --
--- Table structure for table `reviewers`
+-- Table structure for table `Reviewers`
 --
 
-DROP TABLE IF EXISTS `reviewers`;
+DROP TABLE IF EXISTS `Reviewers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `reviewers` (
+CREATE TABLE `Reviewers` (
   `reviewerId` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
@@ -35,29 +35,34 @@ CREATE TABLE `reviewers` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `reviewers`
+-- Dumping data for table `Reviewers`
 --
 
-LOCK TABLES `reviewers` WRITE;
-/*!40000 ALTER TABLE `reviewers` DISABLE KEYS */;
-INSERT INTO `reviewers` VALUES 
+LOCK TABLES `Reviewers` WRITE;
+/*!40000 ALTER TABLE `Reviewers` DISABLE KEYS */;
+INSERT INTO `Reviewers` VALUES 
 (1,'Adams Sean','sean','sadams@gmail.com','111'),
 (2,'Banks Colin','colin','cbanks@aol.com','222'),
 (3,'Casto Taylor','taylor','tcasto@outlook.com','333'),
 (4,'Davis Jake','jake','jdavis@gmail.com','444'),
 (5,'Elmer Shelby','shelby','selmer@icloud.com','555'),
 (6,'Forbes Arielle','arielle','aforbes@outlook.com','666');
-/*!40000 ALTER TABLE `reviewers` ENABLE KEYS */;
+/*!40000 ALTER TABLE `Reviewers` ENABLE KEYS */;
 UNLOCK TABLES;
+
+
+
+
+
 
 --
 -- Table structure for table `movies`
 --
 
-DROP TABLE IF EXISTS `movies`;
+DROP TABLE IF EXISTS `Movies`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `movies` (
+CREATE TABLE `Movies` (
   `title` varchar(100) NOT NULL,
   `movieId` int(11) NOT NULL AUTO_INCREMENT,
   `budget` bigint(20) DEFAULT NULL,
@@ -71,29 +76,34 @@ CREATE TABLE `movies` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `movies`
+-- Dumping data for table `Movies`
 --
 
-LOCK TABLES `movies` WRITE;
-/*!40000 ALTER TABLE `movies` DISABLE KEYS */;
-INSERT INTO `movies` VALUES 
+LOCK TABLES `Movies` WRITE;
+/*!40000 ALTER TABLE `Movies` DISABLE KEYS */;
+INSERT INTO `Movies` VALUES 
 ('Soul',2948372,NULL,8.1,'animation,adventure,comedy',96200000,2020),
 ('Hamilton',8503618,40000000,8.5,'animation,adventure,comedy',NULL,2019),
 ('1917',8579674,95000000,8.2,'drama,thriller,war',384877547,2019),
 ('Joker',7286456,55000000,8.2,'crime,drama,thriller',1074251311,2019),
 ('Avengers: Endgame',4154796,356000000,8.4,'action,adventure,drama',2797800564,2019),
 ('Andhadhun',4500000,356000000,8.3,'crime,drama,music',62475342,2018);
-/*!40000 ALTER TABLE `movies` ENABLE KEYS */;
+/*!40000 ALTER TABLE `Movies` ENABLE KEYS */;
 UNLOCK TABLES;
 
+
+
+
+
+
 --
--- Table structure for table `ratings`
+-- Table structure for table `Ratings`
 --
 
-DROP TABLE IF EXISTS `ratings`;
+DROP TABLE IF EXISTS `Ratings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ratings` (
+CREATE TABLE `Ratings` (
   `movieId` int(11) NOT NULL AUTO_INCREMENT,
   `reviewerId` int(11) NOT NULL,
   `ratingDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -102,31 +112,41 @@ CREATE TABLE `ratings` (
   UNIQUE KEY `ratings_unique` (`movieId`,`reviewerId`),
   KEY `ratings_fk_movie` (`movieId`),
   KEY `ratings_fk_reviewer` (`reviewerId`),
-  CONSTRAINT `ratings_fk_movie` FOREIGN KEY (`movieId`) REFERENCES `movies` (`movieId`) ON UPDATE CASCADE,
-  CONSTRAINT `ratings_fk_reviewer` FOREIGN KEY (`reviewerId`) REFERENCES `reviewers` (`reviewerId`) ON UPDATE CASCADE
+  CONSTRAINT `ratings_fk_movie` FOREIGN KEY (`movieId`) REFERENCES `Movies` (`movieId`) ON UPDATE CASCADE,
+  CONSTRAINT `ratings_fk_reviewer` FOREIGN KEY (`reviewerId`) REFERENCES `Reviewers` (`reviewerId`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `ratings`
+-- Dumping data for table `Ratings`
 --
 
-LOCK TABLES `ratings` WRITE;
-/*!40000 ALTER TABLE `ratings` DISABLE KEYS */;
-INSERT INTO `ratings` VALUES 
+LOCK TABLES `Ratings` WRITE;
+/*!40000 ALTER TABLE `Ratings` DISABLE KEYS */;
+INSERT INTO `Ratings` VALUES 
 (2948372,1,'2020-02-15 13:32:42',8.0,'Just do yourself a favour and watch it, it is unmissable.'),
 (8503618,2,'2020-03-10 3:40:32',7.0,'Awesome screenplay Good story written Awesome acting'),
 (8579674,3,'2020-04-20 12:03:22',8.0,'This movie is a perfect example of how you can tell a nail-consuming thriller in a comedic way'),
 (7286456,4,'2020-05-31 15:10:12',9.0,'It is a very good movie'),
 (4154796,5,'2020-06-02 22:20:23',7.0,'First half is extraordinary, climax below ordinary.'),
 (4500000,6,'2020-07-07 10:40:55',8.0,'Brilliant acting');
-/*!40000 ALTER TABLE `ratings` ENABLE KEYS */;
+/*!40000 ALTER TABLE `Ratings` ENABLE KEYS */;
 UNLOCK TABLES;
 
-DROP TABLE IF EXISTS `directors`;
+
+
+
+
+
+
+--
+-- Table structure for table `Directors`
+--
+
+DROP TABLE IF EXISTS `Directors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `directors` (
+CREATE TABLE `Directors` (
   `directorId` int(11) NOT NULL AUTO_INCREMENT,
   `lastName` varchar(50) NOT NULL,
   `firstName` varchar(50) NOT NULL,
@@ -134,7 +154,7 @@ CREATE TABLE `directors` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-INSERT INTO `directors` (`lastName`, `firstName`) VALUES 
+INSERT INTO `Directors` (`lastName`, `firstName`) VALUES 
 ('Docter', 'Pete'),
 ('Kail', 'Thomas'),
 ('Mendes', 'Sam'),
@@ -142,19 +162,29 @@ INSERT INTO `directors` (`lastName`, `firstName`) VALUES
 ('Russo', 'Joe'),
 ('Russo', 'Anthony'),
 ('Raghavan', 'Siriam');
-/*!40000 ALTER TABLE `directors` ENABLE KEYS */;
+/*!40000 ALTER TABLE `Directors` ENABLE KEYS */;
 
 
-DROP TABLE IF EXISTS `dir_mov`;
-CREATE TABLE `dir_mov` (
+
+
+
+
+
+
+--
+-- Table structure for table `DirMovies`
+--
+
+DROP TABLE IF EXISTS `DirMovies`;
+CREATE TABLE `DirMovies` (
   `directorId` int(11) NOT NULL,
   `movieId` int(11) NOT NULL,
   -- PRIMARY KEY(`directorId`, `movieId`),
-  FOREIGN KEY (`directorId`) REFERENCES `directors` (`directorId`) ON DELETE CASCADE,
-  FOREIGN KEY (`movieId`) REFERENCES `movies` (`movieId`) ON DELETE CASCADE
+  FOREIGN KEY (`directorId`) REFERENCES `Directors` (`directorId`) ON DELETE CASCADE,
+  FOREIGN KEY (`movieId`) REFERENCES `Movies` (`movieId`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-INSERT INTO `dir_mov` (`directorId`, `movieId`) VALUES 
+INSERT INTO `DirMovies` (`directorId`, `movieId`) VALUES 
 (1, 2948372),
 (2, 8503618),
 (3, 8579674),
@@ -164,10 +194,20 @@ INSERT INTO `dir_mov` (`directorId`, `movieId`) VALUES
 (7, 4500000);
 
 
-DROP TABLE IF EXISTS `actors`;
+
+
+
+
+
+
+
+--
+-- Table structure for table `Actors`
+--
+DROP TABLE IF EXISTS `Actors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `actors` (
+CREATE TABLE `Actors` (
   `actorId` int(11) NOT NULL AUTO_INCREMENT,
   `lastName` varchar(50) NOT NULL,
   `firstName` varchar(50) NOT NULL,
@@ -175,7 +215,7 @@ CREATE TABLE `actors` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-INSERT INTO `actors` (`lastName`, `firstName`) VALUES 
+INSERT INTO `Actors` (`lastName`, `firstName`) VALUES 
 ('Foxx', 'Jamie'),
 ('Tina', 'Fey'),
 ('Diggs', 'Daveed'),
@@ -190,18 +230,26 @@ INSERT INTO `actors` (`lastName`, `firstName`) VALUES
 ('Hemsworth', 'Chris'),
 ('Hashmi ', 'Tabassum '),
 ('Khurrana', 'Ayushmann');
-/*!40000 ALTER TABLE `actors` ENABLE KEYS */;
+/*!40000 ALTER TABLE `Actors` ENABLE KEYS */;
 
-DROP TABLE IF EXISTS `act_mov`;
-CREATE TABLE `act_mov` (
+
+
+
+
+
+
+--
+-- Table structure for table `ActMovies`
+--
+DROP TABLE IF EXISTS `ActMovies`;
+CREATE TABLE `ActMovies` (
   `actorId` int(11) NOT NULL,
   `movieId` int(11) NOT NULL,
-  -- PRIMARY KEY(`actorId`, `movieId`),
-  FOREIGN KEY (`actorId`) REFERENCES `actors` (`actorId`) ON DELETE CASCADE,
-  FOREIGN KEY (`movieId`) REFERENCES `movies` (`movieId`) ON DELETE CASCADE
+  FOREIGN KEY (`actorId`) REFERENCES `Actors` (`actorId`) ON DELETE CASCADE,
+  FOREIGN KEY (`movieId`) REFERENCES `Movies` (`movieId`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-INSERT INTO `act_mov` (`actorId`, `movieId`) VALUES 
+INSERT INTO `ActMovies` (`actorId`, `movieId`) VALUES 
 (1, 2948372),
 (2, 2948372),
 (3, 8503618),
@@ -217,16 +265,28 @@ INSERT INTO `act_mov` (`actorId`, `movieId`) VALUES
 (13, 4500000),
 (14, 4500000);
 
-DROP TABLE IF EXISTS `dir_act`;
-CREATE TABLE `dir_act` (
+
+
+
+
+
+
+
+
+
+
+--
+-- Table structure for table `DirActors`
+--
+DROP TABLE IF EXISTS `DirActors`;
+CREATE TABLE `DirActors` (
   `directorId` int(11) NOT NULL,
   `actorId` int(11) NOT NULL,
-  -- PRIMARY KEY(`directorId`, `actorId`),
-  FOREIGN KEY (`directorId`) REFERENCES `directors` (`directorId`) ON DELETE CASCADE,
-  FOREIGN KEY (`actorId`) REFERENCES `actors` (`actorId`) ON DELETE CASCADE
+  FOREIGN KEY (`directorId`) REFERENCES `Directors` (`directorId`) ON DELETE CASCADE,
+  FOREIGN KEY (`actorId`) REFERENCES `Actors` (`actorId`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-INSERT INTO `dir_act` (`directorId`, `actorId`) VALUES 
+INSERT INTO `DirActors` (`directorId`, `actorId`) VALUES 
 (1,1),
 (1,2),
 (2,3),
