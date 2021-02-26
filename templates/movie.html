@@ -29,12 +29,9 @@
     <div class="container">
       <a href='/' class="navbar-brand">Home</a>
       <li><a href="/movie" class="navbar-brand">Movies</a></li>
-      <li><a href="/user_reviews" class="navbar-brand">Reviews</a></li>
+      <li><a href="/reviews" class="navbar-brand">Reviews</a></li>
       <li><a href="/director" class="navbar-brand">Directors</a></li>
       <li><a href="/actor" class="navbar-brand">Actors</a></li>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
       {% block body %}
       <div class="collapse navbar-collapse" id="navbarResponsive">
         {% from "includes/_formhelpers.html" import render_field %}
@@ -60,7 +57,7 @@
   <header class="masthead text-center text-white">
     <div class="masthead-content">
       <div class="container">
-        <h1 class="masthead-heading mb-0">All movies</h1>
+        <h1 class="masthead-heading mb-0">Movies</h1>
         {% if session.logged_in != NULL %}
         <a href="/add_movie" class="btn btn-primary btn-xl rounded-pill mt-5"> Add Movie</a>
         {% else %}

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -29,82 +30,79 @@
     <div class="container">
       <a href='/' class="navbar-brand">Home</a>
       <li><a href="/movie" class="navbar-brand">Movies</a></li>
-      <li><a href="/reviews" class="navbar-brand">Reviews</a></li>
+      <li><a href="/user_reviews" class="navbar-brand">Reviews</a></li>
       <li><a href="/director" class="navbar-brand">Directors</a></li>
       <li><a href="/actor" class="navbar-brand">Actors</a></li>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
       {% block body %}
       <div class="collapse navbar-collapse" id="navbarResponsive">
+        {% from "includes/_formhelpers.html" import render_field %}
+        <form method="POST" action="" class="form-inline">
+        <div class="form-group">{{render_field(form.title, class_="form-control")}}</div>
+        <input type="submit" class="btn btn-primary" value="Search">
+        </form>
         <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-          {% if session.logged_in == NULL %}
-            <a class="navbar-brand" href="/register">Sign Up</a>
-          </li>
-          <li class="nav-item">
-            <a class="navbar-brand" href="/login">Log In</a>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
+        <li class="nav-item">
+          {% if session.logged_in %}
+          <li><a href="/dashboard" class="navbar-brand">{{session.username}}</a></li>
+          <li><a href="/logout" class="navbar-brand">Log out</a></li>
+        </li>
+        {% else %}
+        <li><a href="/register" class="navbar-brand">Sign up</a></li>
+        <li><a href="/login" class="navbar-brand">Sign in</a></li>
+        {% endif %}
+      </ul>
+    </div>
     </div>
   </nav>
 
   <header class="masthead text-center text-white">
     <div class="masthead-content">
       <div class="container">
-        <h4 class="masthead-heading mb-0">Seems we've never heard of this movie! Tell us more about it!</h4>
-        <!-- <h2 class="masthead-subheading mb-0">Honest Reviews</h2> -->
-        {% if session.logged_in != NULL %}
-        <a href="/add_movie" class="btn btn-primary btn-xl rounded-pill mt-5"> Add Movie</a>
-        {% else %}
-        <a href="/login" class="btn btn-primary btn-xl rounded-pill mt-5">Log in to add a movie</a>
-        {% endif %}
+        <h1 class="masthead-heading mb-0">Reviews</h1>
       </div>
     </div>
     <div class="bg-circle-1 bg-circle"></div>
     <div class="bg-circle-2 bg-circle"></div>
+    <div class="bg-circle-3 bg-circle"></div>
+    <div class="bg-circle-4 bg-circle"></div>
   </header>
 
   <br>
   <section>
     <div class="container">
-        <div class="row align-items-center">
-            <!-- <div class="col-lg-6 order-lg-2"> -->
+      <div class="row align-items-center">
+        <!-- <div class="col-lg-6 order-lg-2"> -->
 
-        {% for row in rows %}
-        <input type="hidden" name="movie_id" value = "{{row[0]}}">
-        {% endfor %}
+          {% for row in rows %}
+          <input type="hidden" name="movie_id" value = "{{row[0]}}">
+          {% endfor %}
 
-        <table class="table table-striped">
+          <hr>
+          <table class="table table-striped">
             <tr>
-            <th>Movie</th>
-            <th>Budget</th>
-            <th>Rating</th>
-            <th>Genre</th>
-            <th>Box office</th>
-            <th>Year</th>
-            <th></th>
+              <th>Rating</th>
+              <th>Movie</th>
+              <th>Reviewer</th>
+              <th>Rating Date</th>
+              <th>Review</th>
+              <th></th>
             </tr>
             {% for row in rows %}
-            <tr>
+              <tr>
                 <td>{{row[1]}}</td>
                 <td>{{row[2]}}</td>
                 <td>{{row[3]}}</td>
                 <td>{{row[4]}}</td>
                 <td>{{row[5]}}</td>
-                <td>{{row[6]}}</td>
                 <td><a href="view_rating/{{row[0]}}" class="btn btn-default pull-right">View</a></td>
-            </tr>
+              </tr>
             {% endfor %}
-        </table>
+          </table>
         {% endblock %}
         <!-- </div> -->
-     </div>
-   </div>
+      </div>
+    </div>
   </section>
-
 
 
   <!-- Footer -->
@@ -122,3 +120,4 @@
 </body>
 
 </html>
+

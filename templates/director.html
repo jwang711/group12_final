@@ -29,33 +29,35 @@
     <div class="container">
       <a href='/' class="navbar-brand">Home</a>
       <li><a href="/movie" class="navbar-brand">Movies</a></li>
-      <li><a href="/user_reviews" class="navbar-brand">Reviews</a></li>
+      <li><a href="/reviews" class="navbar-brand">Reviews</a></li>
       <li><a href="/director" class="navbar-brand">Directors</a></li>
       <li><a href="/actor" class="navbar-brand">Actors</a></li>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
       {% block body %}
       <div class="collapse navbar-collapse" id="navbarResponsive">
+        {% from "includes/_formhelpers.html" import render_field %}
+        <form method="POST" action="" class="form-inline">
+        <div class="form-group">{{render_field(form.title, class_="form-control")}}</div>
+        <input type="submit" class="btn btn-primary" value="Search">
+        </form>
         <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-          {% if session.logged_in == NULL %}
-            <a class="navbar-brand" href="/register">Sign Up</a>
-          </li>
-          <li class="nav-item">
-            <a class="navbar-brand" href="/login">Log In</a>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
+        <li class="nav-item">
+          {% if session.logged_in %}
+          <li><a href="/dashboard" class="navbar-brand">{{session.username}}</a></li>
+          <li><a href="/logout" class="navbar-brand">Log out</a></li>
+        </li>
+        {% else %}
+        <li><a href="/register" class="navbar-brand">Sign up</a></li>
+        <li><a href="/login" class="navbar-brand">Sign in</a></li>
+        {% endif %}
+      </ul>
+    </div>
     </div>
   </nav>
 
   <header class="masthead text-center text-white">
     <div class="masthead-content">
       <div class="container">
-        <h1 class="masthead-heading mb-0">DIRECTORS</h1>
-        <!-- <h2 class="masthead-subheading mb-0">Honest Reviews</h2> -->
+        <h1 class="masthead-heading mb-0">Directors</h1>
         {% if session.logged_in != NULL %}
         <a href="/add_director" class="btn btn-primary btn-xl rounded-pill mt-5"> Add A Director</a>
         {% else %}

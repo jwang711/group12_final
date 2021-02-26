@@ -29,12 +29,9 @@
     <div class="container">
       <a href='/' class="navbar-brand">Home</a>
       <li><a href="/movie" class="navbar-brand">Movies</a></li>
-      <li><a href="/user_reviews" class="navbar-brand">Reviews</a></li>
+      <li><a href="/reviews" class="navbar-brand">Reviews</a></li>
       <li><a href="/director" class="navbar-brand">Directors</a></li>
       <li><a href="/actor" class="navbar-brand">Actors</a></li>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
       {% block body %}
       <div class="collapse navbar-collapse" id="navbarResponsive">
           {% from "includes/_formhelpers.html" import render_field %}
