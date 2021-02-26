@@ -107,7 +107,7 @@ CREATE TABLE `Ratings` (
   `movieId` int(11) NOT NULL AUTO_INCREMENT,
   `reviewerId` int(11) NOT NULL,
   `ratingDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `rating` decimal(2,1) DEFAULT NULL,
+  `rating` int(11) DEFAULT NULL,
   `review` varchar(255) DEFAULT NULL,
   UNIQUE KEY `ratings_unique` (`movieId`,`reviewerId`),
   KEY `ratings_fk_movie` (`movieId`),
