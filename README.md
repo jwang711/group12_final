@@ -1,5 +1,5 @@
 ```bash
 source ./venv/bin/activate
 export FLASK_APP=app.py
-python -m flask run -h 0.0.0.0 -p YOURPORT --reload
+python -m flask run -h 0.0.0.0 -p YOUR_PORT_NUMBER --reload
 ```
