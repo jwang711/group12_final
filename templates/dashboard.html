@@ -36,7 +36,7 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       {% block body %}
-      <div class="collapse navbar-collapse" id="navbarResponsive">
+      <!-- <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
           {% if session.logged_in %}
@@ -48,7 +48,25 @@
           <li><a href="/login" class="navbar-brand">Sign in</a></li>
           {% endif %}
         </ul>
-      </div>
+      </div> -->
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        {% from "includes/_formhelpers.html" import render_field %}
+        <form method="POST" action="" class="form-inline">
+        <div class="form-group">{{render_field(form.title, class_="form-control")}}</div>
+        <input type="submit" class="btn btn-primary" value="Search">
+        </form>
+        <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          {% if session.logged_in %}
+          <li><a href="/dashboard" class="navbar-brand">{{session.username}}</a></li>
+          <li><a href="/logout" class="navbar-brand">Log out</a></li>
+        </li>
+        {% else %}
+        <li><a href="/register" class="navbar-brand">Sign up</a></li>
+        <li><a href="/login" class="navbar-brand">Sign in</a></li>
+        {% endif %}
+      </ul>
+    </div>
     </div>
   </nav>
 
@@ -97,9 +115,7 @@
             </tr>
           {% endfor %}
         </table>
-      
-        <!-- <a href="/replace with add_review url" class="btn btn-primary"> Add Review</a> -->
-      {% endblock %}
+            {% endblock %}
       </div>
     </div>
   </section>

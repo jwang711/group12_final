@@ -70,7 +70,7 @@ def register():
     return render_template('register.html', form=form)
 
 
-# # User login
+# User login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     db_connection = connect_to_database()
@@ -133,16 +133,18 @@ class MovieForm(Form):
     budget = IntegerField('Budget')
     box_office = IntegerField('Box office')
     rating = IntegerField('Rating',)
-    # director = StringField('Director', [validators.Length(min=1, max=200)])
-    # actor = StringField('actor', [validators.Length(min=1, max=200)])
+
 class castForm(Form):
     fname = StringField('First Name', [validators.Length(min=1, max=100)])
     lname = StringField('Last Name', [validators.Length(min=1, max=100)])
+
 class mov_Form(Form):
     movTitle = StringField('Title of Movie', [validators.Length(min=1, max=100)])
+
 class reviewForm(Form):
     rating = IntegerField('Rating', [validators.NumberRange(min=0, max=10)])
     review = StringField('Review', [validators.Length(min=1, max=10000)])
+
 # Movies
 @app.route('/movie')
 def movie():
@@ -165,8 +167,6 @@ def add_movie():
         budget = form.budget.data
         box_office = form.box_office.data
         rating = form.rating.data
-        # director = form.director.data
-        # actor = form.actor.data
 
         movie_query = 'INSERT INTO movies (title,budget,avgRating,genre,boxOffice,year) VALUES (%s,%s,%s,%s,%s,%s)'
         data = (title,budget,rating,genre,box_office,release_year)
@@ -212,7 +212,7 @@ def view_rating(movieId):
     return render_template('view_rating.html', results1=results1, results2=results2, id=movieId)
 
 
-#display list of directors
+#Display list of directors
 @app.route('/director')
 def director():
     db_connection = connect_to_database()
@@ -220,7 +220,7 @@ def director():
     dir_results = execute_query(db_connection, dir_query).fetchall()
     return render_template('director.html', rows=dir_results)
 
-#display individual director
+#Display individual director
 @app.route('/director/id=<int:directorId>')
 def view_dir(directorId):
     db_connection = connect_to_database()
@@ -272,7 +272,7 @@ def add_dir_mov(directorId):
 
     return render_template('add_dir_mov.html', form=form)
 
-#add actor to director
+#Add actor to director
 @app.route('/add_dir_act/<int:directorId>', methods=['GET', 'POST'])
 def add_dir_act(directorId):
     form = castForm(request.form)
@@ -289,7 +289,7 @@ def add_dir_act(directorId):
 
     return render_template('add_dir_act.html', form=form)
 
-#display list of actors
+#Display list of actors
 @app.route('/actor')
 def actor():
     db_connection = connect_to_database()
@@ -297,7 +297,7 @@ def actor():
     act_results = execute_query(db_connection, act_query).fetchall()
     return render_template('actor.html', rows=act_results)
 
-#display individual actor
+#Display individual actor
 @app.route('/actor/id=<int:actorId>')
 def view_act(actorId):
     db_connection = connect_to_database()
@@ -314,7 +314,7 @@ def view_act(actorId):
 
     return render_template('view_actor.html', mov_rows=mov_results, dir_rows=dir_results, name=name, id=actorId)
 
-#add a new actor
+#Add a new actor
 @app.route('/add_actor', methods=['GET', 'POST'])
 def add_actor():
     form = castForm(request.form)
