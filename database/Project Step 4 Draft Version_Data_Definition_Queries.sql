@@ -66,7 +66,6 @@ CREATE TABLE `Movies` (
   `title` varchar(100) NOT NULL,
   `movieId` int(11) NOT NULL AUTO_INCREMENT,
   `budget` bigint(20) DEFAULT NULL,
-  `avgRating` decimal(2,1) DEFAULT NULL,
   `genre` varchar(50) NOT NULL,
   `boxOffice` bigint(20) DEFAULT NULL,
   `year` int(11) NOT NULL,
@@ -82,12 +81,12 @@ CREATE TABLE `Movies` (
 LOCK TABLES `Movies` WRITE;
 /*!40000 ALTER TABLE `Movies` DISABLE KEYS */;
 INSERT INTO `Movies` VALUES 
-('Soul',2948372,NULL,8.1,'animation,adventure,comedy',96200000,2020),
-('Hamilton',8503618,40000000,8.5,'animation,adventure,comedy',NULL,2019),
-('1917',8579674,95000000,8.2,'drama,thriller,war',384877547,2019),
-('Joker',7286456,55000000,8.2,'crime,drama,thriller',1074251311,2019),
-('Avengers: Endgame',4154796,356000000,8.4,'action,adventure,drama',2797800564,2019),
-('Andhadhun',4500000,356000000,8.3,'crime,drama,music',62475342,2018);
+('Soul',2948372,NULL,'animation,adventure,comedy',96200000,2020),
+('Hamilton',8503618,40000000,'animation,adventure,comedy',NULL,2019),
+('1917',8579674,95000000,'drama,thriller,war',384877547,2019),
+('Joker',7286456,55000000,'crime,drama,thriller',1074251311,2019),
+('Avengers: Endgame',4154796,356000000,'action,adventure,drama',2797800564,2019),
+('Andhadhun',4500000,356000000,'crime,drama,music',62475342,2018);
 /*!40000 ALTER TABLE `Movies` ENABLE KEYS */;
 UNLOCK TABLES;
 
