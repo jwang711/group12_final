@@ -105,7 +105,7 @@ DROP TABLE IF EXISTS `Ratings`;
 CREATE TABLE `Ratings` (
   `movieId` int(11) NOT NULL AUTO_INCREMENT,
   `reviewerId` int(11) NOT NULL,
-  `ratingDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `ratingDate` date NOT NULL,
   `rating` int(11) DEFAULT NULL,
   `review` varchar(255) DEFAULT NULL,
   UNIQUE KEY `ratings_unique` (`movieId`,`reviewerId`),
@@ -123,12 +123,12 @@ CREATE TABLE `Ratings` (
 LOCK TABLES `Ratings` WRITE;
 /*!40000 ALTER TABLE `Ratings` DISABLE KEYS */;
 INSERT INTO `Ratings` VALUES 
-(2948372,1,'2020-02-15 13:32:42',8.0,'Just do yourself a favour and watch it, it is unmissable.'),
-(8503618,2,'2020-03-10 3:40:32',7.0,'Awesome screenplay Good story written Awesome acting'),
-(8579674,3,'2020-04-20 12:03:22',8.0,'This movie is a perfect example of how you can tell a nail-consuming thriller in a comedic way'),
-(7286456,4,'2020-05-31 15:10:12',9.0,'It is a very good movie'),
-(4154796,5,'2020-06-02 22:20:23',7.0,'First half is extraordinary, climax below ordinary.'),
-(4500000,6,'2020-07-07 10:40:55',8.0,'Brilliant acting');
+(2948372,1,'2020-02-15',8.0,'Just do yourself a favour and watch it, it is unmissable.'),
+(8503618,2,'2020-03-10',7.0,'Awesome screenplay Good story written Awesome acting'),
+(8579674,3,'2020-04-20',8.0,'This movie is a perfect example of how you can tell a nail-consuming thriller in a comedic way'),
+(7286456,4,'2020-05-31',9.0,'It is a very good movie'),
+(4154796,5,'2020-06-02',7.0,'First half is extraordinary, climax below ordinary.'),
+(4500000,6,'2020-07-07',8.0,'Brilliant acting');
 /*!40000 ALTER TABLE `Ratings` ENABLE KEYS */;
 UNLOCK TABLES;
 
