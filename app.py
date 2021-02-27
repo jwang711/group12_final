@@ -178,8 +178,8 @@ def add_movie():
         box_office = form.box_office.data
         rating = form.rating.data
 
-        movie_query = 'INSERT INTO Movies (title,budget,avgRating,genre,boxOffice,year) VALUES (%s,%s,%s,%s,%s,%s)'
-        data = (title,budget,rating,genre,box_office,release_year)
+        movie_query = 'INSERT INTO Movies (title,budget,genre,boxOffice,year) VALUES (%s,%s,%s,%s,%s)'
+        data = (title,budget,genre,box_office,release_year)
         execute_query(db_connection, movie_query, data)
         flash('Movie added!', 'success')
 
@@ -218,10 +218,9 @@ def add_review(movieId):
 @app.route('/view_rating/<int:movieId>')
 def view_rating(movieId):
     db_connection = connect_to_database()
-    view_query = "SELECT Reviewers.username,rating,review FROM Reviewers inner join Ratings on Reviewers.reviewerId = Ratings.reviewerId WHERE Ratings.movieId = %s"  % (movieId)
-    # print(view_query)
+    view_query = "SELECT Reviewers.username,rating,review, Ratings.movieId FROM Reviewers inner join Ratings on Reviewers.reviewerId = Ratings.reviewerId WHERE Ratings.movieId = %s"  % (movieId)
     selectedmovie = "SELECT title,CONCAT('$', FORMAT(budget,'C0')),round(avg(rating),1),genre,CONCAT('$', FORMAT(boxOffice,'C0')),year FROM Movies inner join Ratings on Movies.movieId = Ratings.movieId WHERE Movies.movieId = %s"  % (movieId)
-    # print(selectedmovie)
+
     results1 = execute_query(db_connection, view_query)
     results2 = execute_query(db_connection, selectedmovie)
     return render_template('view_rating.html', results1=results1, results2=results2, id=movieId)
@@ -244,7 +243,7 @@ def director():
 @app.route('/director/id=<int:directorId>')
 def view_dir(directorId):
     db_connection = connect_to_database()
-    view_mov_query = "SELECT Movies.movieId, Movies.title FROM Movies JOIN DirMovies ON Movies.movieId = DirMovies.movieId JOIN Directors ON DirMovies.directorId = Directors.directorId WHERE Directors.directorId = %s" % (directorId)
+    view_mov_query = "SELECT Movies.movieId, Directors.directorId, Movies.title FROM Movies JOIN DirMovies ON Movies.movieId = DirMovies.movieId JOIN Directors ON DirMovies.directorId = Directors.directorId WHERE Directors.directorId = %s" % (directorId)
     view_act_query = "SELECT Actors.actorId, CONCAT(Actors.firstName, ' ', Actors.lastName) as act_name FROM Actors JOIN DirActors ON Actors.actorId = DirActors.actorId LEFT JOIN Directors ON DirActors.directorId = Directors.directorId WHERE Directors.directorId = %s"  % (directorId)
     dirName = "SELECT CONCAT(Directors.firstName, ' ', Directors.lastName) as dir_name FROM Directors WHERE directorId = %s" % (directorId)
     mov_results = execute_query(db_connection, view_mov_query)
@@ -279,14 +278,13 @@ def add_director():
 @app.route('/add_dir_mov/<int:directorId>', methods=['GET', 'POST'])
 def add_dir_mov(directorId):
     form = mov_Form(request.form)
-    errorform = MovieForm(request.form)
     db_connection = connect_to_database()
     if request.method == 'POST':
         movTitle = form.movTitle.data
         dm_query = "INSERT INTO DirMovies (directorId, movieId) VALUES (%s,(SELECT movieID FROM Movies WHERE title='%s'))" % (directorId, movTitle)
         try:
             execute_query(db_connection, dm_query)
-            return view_act(directorId)
+            return redirect(request.referrer)
         except:
             return render_template('error_add_movie.html')
 
@@ -301,11 +299,11 @@ def add_dir_act(directorId):
         fname = form.fname.data
         lname = form.lname.data
         ad_query = "INSERT INTO DirActors (directorId, actorId) VALUES (%s,(SELECT actorId FROM Actors WHERE firstName = '%s' AND lastName = '%s'))" % (directorId, fname, lname)
-        try:
-            execute_query(db_connection, ad_query)
-            return view_act(directorId)
-        except:
-            return render_template('error_add_actor.html')
+        #try:
+        execute_query(db_connection, ad_query)
+        return (''), 204
+        #except:
+            #return render_template('error_add_actor.html')
 
     return render_template('add_dir_act.html', form=form)
 
@@ -326,10 +324,11 @@ def actor():
 @app.route('/actor/id=<int:actorId>')
 def view_act(actorId):
     db_connection = connect_to_database()
-    view_mov_query = "SELECT Movies.movieId, Movies.title FROM Movies JOIN ActMovies ON Movies.movieId = ActMovies.movieId JOIN Actors ON ActMovies.actorId = Actors.actorId WHERE Actors.actorId = %s ORDER BY Movies.year" % (actorId)
-    view_dir_query = "SELECT Actors.actorId, CONCAT(Directors.firstName, ' ', Directors.lastName) as dir_name FROM Directors JOIN DirActors ON Directors.directorId = DirActors.directorId LEFT JOIN Actors ON DirActors.actorId = Actors.actorId WHERE Actors.actorId = %s" % (actorId)
+    view_mov_query = "SELECT Movies.movieId, Actors.actorId, Movies.title FROM Movies JOIN ActMovies ON Movies.movieId = ActMovies.movieId JOIN Actors ON ActMovies.actorId = Actors.actorId WHERE Actors.actorId = %s ORDER BY Movies.year" % (actorId)
+
+    view_dir_query = "SELECT Directors.directorId, Actors.actorId, CONCAT(Directors.firstName, ' ', Directors.lastName) as dir_name FROM Directors JOIN DirActors ON Directors.directorId = DirActors.directorId LEFT JOIN Actors ON DirActors.actorId = Actors.actorId WHERE Actors.actorId = %s" % (actorId)
     actName_query = "SELECT CONCAT(Actors.firstName, ' ', Actors.lastName) as act_name FROM Actors WHERE actorId = %s" % (actorId)
-    # print(selectedmovie)
+
     mov_results = execute_query(db_connection, view_mov_query)
     dir_results = execute_query(db_connection, view_dir_query)
     act_results = execute_query(db_connection, actName_query)
@@ -396,6 +395,111 @@ def add_act_dir(actorId):
 
     return render_template('add_act_dir.html', form=form)
 
+# Delete Director from Actor
+@app.route('/actor/del_act_dir', methods=['POST'])
+def del_dir_act():
+    ad_query = "DELETE FROM DirActors WHERE directorId=%s and actorId=%s" % (request.form['dir'], request.form['act'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, ad_query)
+        return redirect(request.referrer)
+    except:
+        return redirect(request.referrer)
+
+# Delete Actor from Director
+@app.route('/director/del_act_dir', methods=['POST'])
+def del_act_dir():
+    ad_query = "DELETE FROM DirActors WHERE directorId=%s and actorId=%s" % (request.form['dir'], request.form['act'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, ad_query)
+        return redirect(request.referrer)
+    except:
+        return redirect(request.referrer)
+
+# Delete Movie from Actor
+@app.route('/actor/del_mov_act', methods=['POST'])
+def del_mov_act():
+    ad_query = "DELETE FROM ActMovies WHERE movieId=%s and actorId=%s" % (request.form['mov'], request.form['act'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, ad_query)
+        return redirect(request.referrer)
+    except:
+        return redirect(request.referrer)
+
+# Delete Movie from Director
+@app.route('/director/del_mov_dir', methods=['POST'])
+def del_mov_dir():
+    ad_query = "DELETE FROM DirMovies WHERE movieId=%s and directorId=%s" % (request.form['mov'], request.form['dir'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, ad_query)
+        return redirect(request.referrer)
+    except:
+        return redirect(request.referrer)
+
+# Delete Movie
+@app.route('/del_mov', methods=['POST'])
+def del_mov():
+    mov_query = "DELETE FROM Movies WHERE movieId=%s" % (request.form['mov'])
+    dir_query = "DELETE FROM DirMovies WHERE movieId=%s" % (request.form['mov'])
+    act_query = "DELETE FROM ActMovies WHERE movieId=%s" % (request.form['mov'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, mov_query)
+        execute_query(db_connection, dir_query)
+        execute_query(db_connection, act_query)
+        return redirect(request.referrer)
+    except:
+        return redirect(request.referrer)
+
+# Delete Director
+@app.route('/del_dir', methods=['POST'])
+def del_dir():
+    dir_query = "DELETE FROM Directors WHERE directorId=%s" % (request.form['dir'])
+    act_query = "DELETE FROM DirActors WHERE directorId=%s" % (request.form['dir'])
+    mov_query = "DELETE FROM DirMovies WHERE directorId=%s" % (request.form['dir'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, dir_query)
+        execute_query(db_connection, act_query)
+        execute_query(db_connection, mov_query)
+        return redirect(request.referrer)
+    except:
+        return redirect(request.referrer)
+
+# Delete Actor
+@app.route('/del_act', methods=['POST'])
+def del_act():
+    act_query = "DELETE FROM Actors WHERE actorId=%s" % (request.form['act'])
+    dir_query = "DELETE FROM DirActors WHERE actorId=%s" % (request.form['act'])
+    mov_query = "DELETE FROM ActMovies WHERE actorId=%s" % (request.form['act'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, act_query)
+        execute_query(db_connection, dir_query)
+        execute_query(db_connection, mov_query)
+        return redirect(request.referrer)
+    except:
+        return redirect(request.referrer)
+
+# Delete Review
+@app.route('/view_rating/del_rev', methods=['POST'])
+def del_rev():
+    username = request.form['user']
+    movieId = int(request.form['mov'])
+    if username != session['username']:
+        flash('You can only delete your own reviews!')
+        return view_rating(movieId)
+    rev_query = "DELETE FROM Ratings WHERE movieId=%s and reviewId=%s" % (movieId, username)
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, rev_query)
+        return redirect(request.referrer)
+    except:
+        print('did not work')
+        return redirect(request.referrer)
 
 if __name__ == '__main__':
     app.run(debug=True)

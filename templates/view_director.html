@@ -19,7 +19,6 @@
 
   <!-- Custom styles for this template -->
   <link href="/static/css/one-page-wonder.min.css" rel="stylesheet">
-
 </head>
 
 <body>
@@ -86,7 +85,14 @@
         </tr>
         {% for row in mov_rows %}
           <tr>
-            <td>{{row[1]}}</td>
+            <td>{{row[2]}}</td>
+            <td>
+              <form action="del_mov_dir" method="post" class="btn btn-default pull-right">
+              <input type="hidden" name="mov" value={{row[0]}}>
+              <input type="hidden" name="dir" value={{row[1]}}>
+              <input type="submit" value="X"/>
+            </form>
+            </td>
           </tr>
         {% endfor %}
       </table>
@@ -102,6 +108,13 @@
         {% for row in act_rows %}
           <tr>
             <td>{{row[1]}}</td>
+            <td>
+              <form action="del_act_dir" method="post" class="btn btn-default pull-right">
+              <input type="hidden" name="dir" value={{id}}>
+              <input type="hidden" name="act" value={{row[0]}}>
+              <input type="submit" value="X"/>
+            </form>
+            </td>
           </tr>
         {% endfor %}
       </table>

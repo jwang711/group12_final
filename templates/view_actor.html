@@ -86,7 +86,14 @@
         </tr>
         {% for row in mov_rows %}
           <tr>
-            <td>{{row[1]}}</td>
+            <td>{{row[2]}}</td>
+            <td>
+              <form action="del_mov_act" method="post" class="btn btn-default pull-right">
+              <input type="hidden" name="mov" value={{row[0]}}>
+              <input type="hidden" name="act" value={{row[1]}}>
+              <input type="submit" value="X"/>
+            </form>
+            </td>
           </tr>
         {% endfor %}
       </table>
@@ -98,10 +105,20 @@
       <table class="table table-striped">
         <tr>
           <th>Directors</th>
+          <th></th>
+          <th></th>
         </tr>
         {% for row in dir_rows %}
           <tr>
-            <td>{{row[1]}}</td>
+            <td>{{row[2]}}</td>
+            <td><a href="up_dir/{{row[0]}}" class="btn btn-default pull-right">Update Name</a></td>
+            <td>
+              <form action="del_act_dir" method="post" class="btn btn-default pull-right">
+              <input type="hidden" name="dir" value={{row[0]}}>
+              <input type="hidden" name="act" value={{row[1]}}>
+              <input type="submit" value="X"/>
+            </form>
+            </td>
           </tr>
         {% endfor %}
       </table>
