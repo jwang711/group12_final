@@ -158,7 +158,7 @@ def movie():
         return search_results(form)
     else:
         db_connection = connect_to_database()
-        movie_query = "SELECT movieId,title,budget,genre,boxOffice,year FROM Movies"
+        movie_query = "SELECT movieId,title,CONCAT('$', FORMAT(budget,'C0')),genre,CONCAT('$', FORMAT(boxOffice,'C0')),year FROM Movies"
         movie_result = execute_query(db_connection,movie_query).fetchall()
         print(movie_result)
 
@@ -220,7 +220,7 @@ def view_rating(movieId):
     db_connection = connect_to_database()
     view_query = "SELECT Reviewers.username,rating,review FROM Reviewers inner join Ratings on Reviewers.reviewerId = Ratings.reviewerId WHERE Ratings.movieId = %s"  % (movieId)
     # print(view_query)
-    selectedmovie = "SELECT title,budget,round(avg(rating),1),genre,boxOffice,year FROM Movies inner join Ratings on Movies.movieId = Ratings.movieId WHERE Movies.movieId = %s"  % (movieId)
+    selectedmovie = "SELECT title,CONCAT('$', FORMAT(budget,'C0')),round(avg(rating),1),genre,CONCAT('$', FORMAT(boxOffice,'C0')),year FROM Movies inner join Ratings on Movies.movieId = Ratings.movieId WHERE Movies.movieId = %s"  % (movieId)
     # print(selectedmovie)
     results1 = execute_query(db_connection, view_query)
     results2 = execute_query(db_connection, selectedmovie)
