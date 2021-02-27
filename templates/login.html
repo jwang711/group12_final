@@ -11,6 +11,10 @@
       <label>Password</label>
       <input type="password" name="password" class="form-control" value={{request.form.password}}>
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    {% if error %}
+      <a class="btn btn-primary" href="/register" role="button">Create an account</a>
+      {% else %}
+      <button type="submit" class="btn btn-primary">Submit</button>
+    {% endif %}
   </form>
 {% endblock %}

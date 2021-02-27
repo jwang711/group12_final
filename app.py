@@ -95,8 +95,8 @@ def login():
                 error = 'There was a problem, your password is incorrect'
                 return render_template('login.html', error=error)
         else:
-            error = 'Username not found'
-            return render_template('login.html', error=error)
+            error = "Looks like you don't have an account with us, create an account to explore!"
+            return render_template('login.html',error=error)
 
     return render_template('login.html')
 
