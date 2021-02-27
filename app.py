@@ -67,7 +67,7 @@ def register():
 
         flash('You have successfully signed up. To continue with the site please log in now')
         return redirect(url_for('login'))
-    return render_template('register.html', form=form)
+    return render_template('register.html', form=form, heaidng="Create a new account")
 
 
 # User login
@@ -117,8 +117,8 @@ def dashboard():
         db_connection = connect_to_database()
         people_query = "SELECT name,email FROM Reviewers WHERE username = %s"
         people_result = execute_query(db_connection, people_query,[session['username']]).fetchone()
-        print(people_result,people_result[0],people_result[1])
-
+        #print(people_result,people_result[0],people_result[1])
+        print(session['username'])
         rating_query = "SELECT title,rating,review,ratingDate FROM Ratings inner join Movies on Ratings.movieId  = Movies.movieId where reviewerId in (SELECT reviewerId FROM Reviewers WHERE username = %s)"
         rating_result = execute_query(db_connection, rating_query,[session['username']]).fetchall()
         # print(rating_result)
@@ -126,7 +126,36 @@ def dashboard():
             return render_template('dashboard.html',results=rating_result, rows=people_result,form=form)
 
         return render_template('dashboard.html',rows=people_result,form=form)
-    return render_template('dashboard.html',form=form)
+@app.route('/up_user', methods=['POST'])
+def up_user():
+    db_connection = connect_to_database()
+    form = RegisterForm(request.form)
+    if request.method == 'POST' and form.validate():
+        name = form.name.data
+        username = form.username.data
+        email = form.email.data
+        password = sha256_crypt.encrypt(str(form.password.data))
+
+        query = 'UPDATE Reviewers SET name=%s, username=%s, email=%s, password=%s WHERE reviewerId = (SELECT reviewerId FROM Reviewers WHERE username=%s)'
+        data = (name,username,email,password, session['username'])
+        execute_query(db_connection, query, data)
+        session['username'] = username
+        flash('You have successfully updated your information')
+        return redirect(url_for('dashboard'))
+    return render_template('register.html', form=form, heading="Update your information")
+
+@app.route('/del_user', methods=['POST'])
+def del_user():
+    username = request.form['user']
+    rev_query = "DELETE FROM Reviewers WHERE reviewerId=(SELECT reviewerId FROM Reviewers WHERE username=%s)" % (username)
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, rev_query)
+        return redirect(url_for('signout'))
+    except:
+        print('did not work')
+        print('username: ', request.form['user'])
+        return redirect(request.referrer)
 
 # Movie Form Class
 #reference: https://flask.palletsprojects.com/en/1.1.x/patterns/wtforms/
@@ -199,6 +228,7 @@ def user_reviews():
         return render_template('reviews.html', rows=results,form=form)
     return render_template('reviews.html', form=form)
 
+#add a new review
 @app.route('/add_review/<int:movieId>', methods=['GET', 'POST'])
 def add_review(movieId):
     form = reviewForm(request.form)
@@ -212,6 +242,7 @@ def add_review(movieId):
         return redirect(url_for('view_rating', movieId=movieId))
     return render_template('add_review.html', form=form)
 
+#view ratings of individual movie
 @app.route('/view_rating/<int:movieId>')
 def view_rating(movieId):
     db_connection = connect_to_database()
@@ -222,6 +253,21 @@ def view_rating(movieId):
     results2 = execute_query(db_connection, selectedmovie)
     return render_template('view_rating.html', results1=results1, results2=results2, id=movieId)
 
+# Delete Review
+@app.route('/view_rating/del_rev', methods=['POST'])
+def del_rev():
+    username = request.form['user']
+    movieId = int(request.form['mov'])
+    rev_query = "DELETE FROM Ratings WHERE movieId=%s and reviewerId=(SELECT reviewerId FROM Reviewers WHERE username=%s)" % (movieId, session['username'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, rev_query)
+        return redirect(request.referrer)
+    except:
+        print('did not work')
+        print('movieID: ', request.form['mov'])
+        print('username: ', request.form['user'])
+        return redirect(request.referrer)
 
 #Display list of directors
 @app.route('/director', methods=['GET', 'POST'])
@@ -231,7 +277,7 @@ def director():
         return search_results(form)
     else:
         db_connection = connect_to_database()
-        dir_query = "SELECT directorId, CONCAT(firstName, ' ', lastName) as dir_name FROM Directors ORDER BY lastName"
+        dir_query = "SELECT directorId, firstName, lastName as dir_name FROM Directors ORDER BY lastName"
         dir_results = execute_query(db_connection, dir_query).fetchall()
         return render_template('director.html', rows=dir_results,form=form)
     return render_template('director.html', form=form)
@@ -304,6 +350,47 @@ def add_dir_act(directorId):
 
     return render_template('add_dir_act.html', form=form)
 
+# Delete Director
+@app.route('/del_dir', methods=['POST'])
+def del_dir():
+    dir_query = "DELETE FROM Directors WHERE directorId=%s" % (request.form['dir'])
+    act_query = "DELETE FROM DirActors WHERE directorId=%s" % (request.form['dir'])
+    mov_query = "DELETE FROM DirMovies WHERE directorId=%s" % (request.form['dir'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, dir_query)
+        execute_query(db_connection, act_query)
+        execute_query(db_connection, mov_query)
+        return redirect(request.referrer)
+    except:
+        return redirect(request.referrer)
+
+# Delete Actor from Director
+@app.route('/director/del_act_dir', methods=['POST'])
+def del_act_dir():
+    ad_query = "DELETE FROM DirActors WHERE directorId=%s and actorId=%s" % (request.form['dir'], request.form['act'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, ad_query)
+        return redirect(request.referrer)
+    except:
+        return redirect(request.referrer)
+
+# Update Actor
+@app.route('/up_dir', methods=['POST'])
+def up_dir():
+    dirID = request.form['dirID']
+    fname = request.form['fname']
+    lname = request.form['lname']
+    dir_query = "UPDATE Directors SET firstName='%s', lastName='%s' WHERE directorId=%s" % (fname, lname, dirID)
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, dir_query)
+        return redirect(request.referrer)
+    except:
+        print("did not work")
+        return redirect(request.referrer)
+
 #Display list of actors
 @app.route('/actor', methods=['GET', 'POST'])
 def actor():
@@ -312,10 +399,9 @@ def actor():
         return search_results(form)
     else:
         db_connection = connect_to_database()
-        act_query = "SELECT actorId, CONCAT(firstName, ' ', lastName) as act_name FROM Actors ORDER BY lastName"
+        act_query = "SELECT actorId, firstName, lastName FROM Actors ORDER BY lastName"
         act_results = execute_query(db_connection, act_query).fetchall()
         return render_template('actor.html', rows=act_results,form=form)
-    return render_template('actor.html', form=form)
 
 #Display individual actor
 @app.route('/actor/id=<int:actorId>')
@@ -404,16 +490,7 @@ def del_dir_act():
     except:
         return redirect(request.referrer)
 
-# Delete Actor from Director
-@app.route('/director/del_act_dir', methods=['POST'])
-def del_act_dir():
-    ad_query = "DELETE FROM DirActors WHERE directorId=%s and actorId=%s" % (request.form['dir'], request.form['act'])
-    db_connection = connect_to_database()
-    try:
-        execute_query(db_connection, ad_query)
-        return redirect(request.referrer)
-    except:
-        return redirect(request.referrer)
+
 
 # Delete Movie from Actor
 @app.route('/actor/del_mov_act', methods=['POST'])
@@ -452,20 +529,7 @@ def del_mov():
     except:
         return redirect(request.referrer)
 
-# Delete Director
-@app.route('/del_dir', methods=['POST'])
-def del_dir():
-    dir_query = "DELETE FROM Directors WHERE directorId=%s" % (request.form['dir'])
-    act_query = "DELETE FROM DirActors WHERE directorId=%s" % (request.form['dir'])
-    mov_query = "DELETE FROM DirMovies WHERE directorId=%s" % (request.form['dir'])
-    db_connection = connect_to_database()
-    try:
-        execute_query(db_connection, dir_query)
-        execute_query(db_connection, act_query)
-        execute_query(db_connection, mov_query)
-        return redirect(request.referrer)
-    except:
-        return redirect(request.referrer)
+
 
 # Delete Actor
 @app.route('/del_act', methods=['POST'])
@@ -482,24 +546,21 @@ def del_act():
     except:
         return redirect(request.referrer)
 
-# Delete Review
-@app.route('/view_rating/del_rev', methods=['POST'])
-def del_rev():
-    username = request.form['user']
-    movieId = int(request.form['mov'])
-    if username != session['username']:
-        flash('You can only delete your own reviews!')
-        return view_rating(movieId)
-    rev_query = "DELETE FROM Ratings WHERE movieId=%s and reviewerId=(SELECT reviewerId FROM Reviewers WHERE username=%s)" % (movieId, session['username'])
+# Update Actor
+@app.route('/up_act', methods=['POST'])
+def up_act():
+    actID = request.form['actID']
+    fname = request.form['fname']
+    lname = request.form['lname']
+    act_query = "UPDATE Actors SET firstName='%s', lastName='%s' WHERE actorId=%s" % (fname, lname, actID)
     db_connection = connect_to_database()
     try:
-        execute_query(db_connection, rev_query)
+        execute_query(db_connection, act_query)
         return redirect(request.referrer)
     except:
-        print('did not work')
-        print('movieID: ', request.form['mov'])
-        print('username: ', request.form['user'])
+        print("did not work")
         return redirect(request.referrer)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

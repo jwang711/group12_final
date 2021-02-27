@@ -58,6 +58,14 @@
     <div class="masthead-content">
       <div class="container">
         <h1>Hello {{session.username}}</h1>
+        <form action="up_user" method="post" class="btn btn-primary">
+              <input type="hidden" name="user" value={{session.username}}>
+              <input type="submit" value="UPDATE INFO"/>
+        </form>
+        <form action="del_user" method="post" class="btn btn-primary">
+              <input type="hidden" name="user" value={{session.username}}>
+              <input type="submit" value="DELETE ACCOUNT"/>
+        </form>
       </div>
     </div>
     <div class="bg-circle-1 bg-circle"></div>
@@ -89,6 +97,7 @@
             <th>Rating</th>
             <th>Rating Date</th>
             <th>Review</th>
+            <th></th>
           </tr>
           {% for row in results %}
             <tr>
@@ -96,6 +105,15 @@
               <td>{{row[1]}}</td>
               <td>{{row[3]}}</td>
               <td>{{row[2]}}</td>
+              <td>
+                  <form action="up_rev" method="POST" class="btn btn-default pull-right">
+                  <input type="hidden" name="movie" value={{row[0]}}>
+                  <input type="hidden" name="rating" value={{row[1]}}>
+                  <input type="hidden" name="date" value={{row[3]}}>
+                  <input type="hidden" name="review" value={{row[2]}}>
+                  <input type="submit" value="X"/>
+                  </form>
+                </td>
             </tr>
           {% endfor %}
         </table>

@@ -99,6 +99,12 @@
                 <td>{{row[5]}}</td>
                 <td><a href="view_rating/{{row[0]}}" class="btn btn-default pull-right">View</a></td>
                 <td>
+                  <form action="up_mov" method="POST" class="btn btn-default pull-right">
+                  <input type="hidden" name="mov" value={{row[0]}}>
+                  <input type="submit" value="UPDATE"/>
+                  </form>
+                </td>
+                <td>
                   <form action="del_mov" method="POST" class="btn btn-default pull-right">
                   <input type="hidden" name="mov" value={{row[0]}}>
                   <input type="submit" value="X"/>

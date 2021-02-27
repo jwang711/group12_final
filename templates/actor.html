@@ -19,7 +19,11 @@
 
   <!-- Custom styles for this template -->
   <link href="/static/css/one-page-wonder.min.css" rel="stylesheet">
-
+    <script>
+    function enableUpdate(name) {
+        document.getElementsByName(name).disabled = false;
+    }
+    </script>
 </head>
 
 <body>
@@ -90,9 +94,15 @@
             </tr>
             {% for row in rows %}
             <tr>
-                <td>{{row[1]}}</td>
-                <td>{{row[2]}}</td>
                 <td><a href="actor/id={{row[0]}}" class="btn btn-default pull-right">View</a></td>
+                <td>
+                    <form action="up_act" method="POST" class="btn btn-default pull-right">
+                    <input type="hidden" name="actID" value={{row[0]}}>
+                    <input type="text" name="fname" value={{row[1]}}>
+                    <input type="text" name="lname" value={{row[2]}}>
+                    <input type="submit" value="UPDATE" />
+                    </form>
+                </td>
                 <td>
                   <form action="del_act" method="POST" class="btn btn-default pull-right">
                   <input type="hidden" name="act" value={{row[0]}}>
