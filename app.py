@@ -209,7 +209,7 @@ def add_review(movieId):
         newReview = "INSERT INTO Ratings (movieId, reviewerId, ratingDate, rating, review) VALUES (%s, (SELECT reviewerId FROM Reviewers WHERE username = %s), CURDATE(), %s, %s)"
         data = (movieId, [session['username']], rating, review)
         execute_query(db_connection, newReview, data)
-        return view_rating(movieId)
+        return redirect(url_for('view_rating', movieId=movieId))
     return render_template('add_review.html', form=form)
 
 @app.route('/view_rating/<int:movieId>')
@@ -490,13 +490,15 @@ def del_rev():
     if username != session['username']:
         flash('You can only delete your own reviews!')
         return view_rating(movieId)
-    rev_query = "DELETE FROM Ratings WHERE movieId=%s and reviewId=%s" % (movieId, username)
+    rev_query = "DELETE FROM Ratings WHERE movieId=%s and reviewerId=(SELECT reviewerId FROM Reviewers WHERE username=%s)" % (movieId, session['username'])
     db_connection = connect_to_database()
     try:
         execute_query(db_connection, rev_query)
         return redirect(request.referrer)
     except:
         print('did not work')
+        print('movieID: ', request.form['mov'])
+        print('username: ', request.form['user'])
         return redirect(request.referrer)
 
 if __name__ == '__main__':
