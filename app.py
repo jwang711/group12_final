@@ -267,7 +267,7 @@ def add_director():
         for rows in result:
             dirID = rows
         dirID = dirID[0]
-        return view_dir(dirID)
+        return redirect(url_for('view_dir', directorId=dirID))
 
     return render_template('add_director.html', form=form)
 
@@ -281,7 +281,7 @@ def add_dir_mov(directorId):
         dm_query = "INSERT INTO DirMovies (directorId, movieId) VALUES (%s,(SELECT movieID FROM Movies WHERE title='%s'))" % (directorId, movTitle)
         try:
             execute_query(db_connection, dm_query)
-            return redirect(request.referrer)
+            return redirect(url_for('view_dir', directorId=directorId))
         except:
             return render_template('error_add_movie.html')
 
@@ -296,11 +296,11 @@ def add_dir_act(directorId):
         fname = form.fname.data
         lname = form.lname.data
         ad_query = "INSERT INTO DirActors (directorId, actorId) VALUES (%s,(SELECT actorId FROM Actors WHERE firstName = '%s' AND lastName = '%s'))" % (directorId, fname, lname)
-        #try:
-        execute_query(db_connection, ad_query)
-        return (''), 204
-        #except:
-            #return render_template('error_add_actor.html')
+        try:
+            execute_query(db_connection, ad_query)
+            return redirect(url_for('view_dir', directorId=directorId))
+        except:
+            return render_template('error_add_actor.html')
 
     return render_template('add_dir_act.html', form=form)
 
@@ -354,7 +354,7 @@ def add_actor():
         for rows in result:
             actID = rows
         actID = actID[0]
-        return view_act(actID)
+        return redirect(url_for('view_act', actorId=actID))
 
     return render_template('add_actor.html', form=form)
 
@@ -368,7 +368,8 @@ def add_act_mov(actorId):
         am_query = "INSERT INTO ActMovies (actorId, movieId) VALUES (%s,(SELECT movieID FROM Movies WHERE title='%s'))" % (actorId, movTitle)
         try:
             execute_query(db_connection, am_query)
-            return view_act(actorId)
+
+            return redirect(url_for('view_act', actorId=actorId))
         except:
             return render_template('error_add_movie.html')
 
@@ -385,7 +386,7 @@ def add_act_dir(actorId):
         ad_query = "INSERT INTO DirActors (actorId, directorId) VALUES (%s,(SELECT directorId FROM Directors WHERE firstName = '%s' AND lastName = '%s'))" % (actorId, fname, lname)
         try:
             execute_query(db_connection, ad_query)
-            return view_act(actorId)
+            return redirect(url_for('view_act', actorId=actorId))
         except:
             return render_template('error_add_director.html')
 
