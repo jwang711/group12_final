@@ -137,7 +137,6 @@ class MovieForm(Form):
     release_year = IntegerField('Release year')
     budget = IntegerField('Budget')
     box_office = IntegerField('Box office')
-    rating = IntegerField('Rating',)
 
 class castForm(Form):
     fname = StringField('First Name', [validators.Length(min=1, max=100)])
@@ -176,12 +175,10 @@ def add_movie():
         release_year = form.release_year.data
         budget = form.budget.data
         box_office = form.box_office.data
-        rating = form.rating.data
 
-        movie_query = 'INSERT INTO Movies (title,budget,avgRating,genre,boxOffice,year) VALUES (%s,%s,%s,%s,%s,%s)'
-        data = (title,budget,rating,genre,box_office,release_year)
+        movie_query = 'INSERT INTO Movies (title,budget,genre,boxOffice,year) VALUES (%s,%s,%s,%s,%s)'
+        data = (title,budget,genre,box_office,release_year)
         execute_query(db_connection, movie_query, data)
-        flash('Movie added!', 'success')
 
         return redirect(url_for('movie'))
 
