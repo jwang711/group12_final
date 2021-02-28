@@ -101,19 +101,21 @@
           </tr>
           {% for row in results %}
             <tr>
-              <td>{{row[0]}}</td>
-              <td>{{row[1]}}</td>
-              <td>{{row[3]}}</td>
-              <td>{{row[2]}}</td>
-              <td>
-                  <form action="up_rev" method="POST" class="btn btn-default pull-right">
-                  <input type="hidden" name="movie" value={{row[0]}}>
-                  <input type="hidden" name="rating" value={{row[1]}}>
-                  <input type="hidden" name="date" value={{row[3]}}>
-                  <input type="hidden" name="review" value={{row[2]}}>
+                  <form action="up_rev" method="POST" class="btn btn-default pull-right" id="reviewForm">
+                  <td>{{row[0]}}</td>
+                  <td><input type="hidden" name="movieID" value={{row[4]}} form="reviewForm"></td>
+                  <td><input type="text" name="rating" value={{row[1]}} form="reviewForm"></td>
+                  <td>{{row[3]}}</td>
+                  <td><textarea name="review" rows="4" cols="50" form="reviewForm">{{row[2]}}</textarea></td>
+                  <td><input type="submit" value="UPDATE"/></td>
+                  </form>
+
+                  <td>
+                  <form action="del_rev" method="post" class="btn btn-default pull-right">
+                  <input type="hidden" name="mov" value={{row[4]}}>
                   <input type="submit" value="X"/>
                   </form>
-                </td>
+                  </td>
             </tr>
           {% endfor %}
         </table>

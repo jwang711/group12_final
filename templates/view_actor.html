@@ -83,6 +83,8 @@
       <table class="table table-striped">
         <tr>
           <th>Movie</th
+          <th></th>
+          <th></th>
         </tr>
         {% for row in mov_rows %}
           <tr>
@@ -111,7 +113,6 @@
         {% for row in dir_rows %}
           <tr>
             <td>{{row[2]}}</td>
-            <td><a href="up_dir/{{row[0]}}" class="btn btn-default pull-right">Update Name</a></td>
             <td>
               <form action="del_act_dir" method="post" class="btn btn-default pull-right">
               <input type="hidden" name="dir" value={{row[0]}}>

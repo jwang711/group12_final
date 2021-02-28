@@ -119,7 +119,7 @@ def dashboard():
         people_result = execute_query(db_connection, people_query,[session['username']]).fetchone()
         #print(people_result,people_result[0],people_result[1])
         print(session['username'])
-        rating_query = "SELECT title,rating,review,ratingDate FROM Ratings inner join Movies on Ratings.movieId  = Movies.movieId where reviewerId in (SELECT reviewerId FROM Reviewers WHERE username = %s)"
+        rating_query = "SELECT title,rating,review,ratingDate, Ratings.movieId FROM Ratings inner join Movies on Ratings.movieId  = Movies.movieId where reviewerId in (SELECT reviewerId FROM Reviewers WHERE username = %s)"
         rating_result = execute_query(db_connection, rating_query,[session['username']]).fetchall()
         # print(rating_result)
         if rating_result:
@@ -213,7 +213,26 @@ def add_movie():
 
     return render_template('add_movie.html', form=form)
 
-
+# Update movie
+@app.route('/up_mov', methods=['POST'])
+def up_mov():
+    movID = request.form['movID']
+    movie = request.form.get('movie')
+    budget = request.form.get('budget')
+    genre = request.form.get('genre')
+    box = request.form.get('box')
+    year = request.form.get('year')
+    budget = int(budget.replace('$','').replace(",",""))
+    box = int(box.replace('$', '').replace(",",""))
+    year = int(year)
+    mov_query = "UPDATE Movies SET title='%s', budget=%s, genre='%s', boxOffice=%s, year=%s WHERE movieId=%s" % (movie, budget, genre, box, year, movID)
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, mov_query)
+        return redirect(request.referrer)
+    except:
+        print("did not work")
+        return redirect(request.referrer)
 # Display user reviews
 @app.route('/reviews', methods=['GET', 'POST'])
 def user_reviews():
@@ -254,9 +273,8 @@ def view_rating(movieId):
     return render_template('view_rating.html', results1=results1, results2=results2, id=movieId)
 
 # Delete Review
-@app.route('/view_rating/del_rev', methods=['POST'])
+@app.route('/del_rev', methods=['POST'])
 def del_rev():
-    username = request.form['user']
     movieId = int(request.form['mov'])
     rev_query = "DELETE FROM Ratings WHERE movieId=%s and reviewerId=(SELECT reviewerId FROM Reviewers WHERE username=%s)" % (movieId, session['username'])
     db_connection = connect_to_database()
@@ -267,6 +285,22 @@ def del_rev():
         print('did not work')
         print('movieID: ', request.form['mov'])
         print('username: ', request.form['user'])
+        return redirect(request.referrer)
+
+# Update Review
+@app.route('/up_rev', methods=['POST'])
+def up_rev():
+    movieID = request.form['movieID']
+    rating = request.form['rating']
+    review = request.form['review']
+
+    rev_query = "UPDATE Ratings SET rating=%s, ratingDate=CURDATE(), review='%s' WHERE movieId=%s AND reviewerId=(SELECT reviewerId FROM Reviewers WHERE username='%s')" % (rating, review, movieID, session['username'])
+    db_connection = connect_to_database()
+    try:
+        execute_query(db_connection, rev_query)
+        return redirect(request.referrer)
+    except:
+        print("did not work")
         return redirect(request.referrer)
 
 #Display list of directors
@@ -376,7 +410,7 @@ def del_act_dir():
     except:
         return redirect(request.referrer)
 
-# Update Actor
+# Update Director
 @app.route('/up_dir', methods=['POST'])
 def up_dir():
     dirID = request.form['dirID']
