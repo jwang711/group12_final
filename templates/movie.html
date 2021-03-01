@@ -101,6 +101,7 @@
                     <td><input type="text" name="genre" value={{row[3]}} ></td>
                     <td><input type="text" name="box" value={{row[4]}} ></td>
                     <td><input type="text" name="year" value={{row[5]}}></td>
+                {% if session.logged_in != NULL %}
                     <td><input type="submit" value="UPDATE" /></td>
                     </form>
 
@@ -111,6 +112,7 @@
                   <input type="submit" value="X"/>
                   </form>
                 </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </table>

@@ -91,9 +91,12 @@
                 <td>
                     <form action="up_dir" method="POST" class="btn btn-default pull-right">
                     <input type="hidden" name="dirID" value={{row[0]}}>
-                    <input type="text" name="fname" value={{row[1]}}>
-                    <input type="text" name="lname" value={{row[2]}}>
-                    <input type="submit" value="UPDATE" />
+                    <td><textarea name="fname" rows="1">{{row[1]}}</textarea></td>
+                    <td><textarea name="lname" rows="1">{{row[2]}}</textarea></td>
+                    <!--- <input type="text" name="fname" value={{row[1]}}>
+                    <input type="text" name="lname" value={{row[2]}}> --->
+                    {% if session.logged_in != NULL %}
+                    <td><input type="submit" value="UPDATE" /></td>
                     </form>
                 </td>
                 <td>
@@ -102,6 +105,7 @@
                   <input type="submit" value="X"/>
                   </form>
                 </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </table>
