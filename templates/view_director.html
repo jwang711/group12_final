@@ -19,6 +19,7 @@
 
   <!-- Custom styles for this template -->
   <link href="/static/css/one-page-wonder.min.css" rel="stylesheet">
+
 </head>
 
 <body>
@@ -55,10 +56,9 @@
     <div class="masthead-content">
       <div class="container">
         <h1 class="masthead-heading mb-0">{{name}}</h1>
-        <!-- <h2 class="masthead-subheading mb-0">Honest Reviews</h2> -->
         {% if session.logged_in != NULL %}
-        <a href="/add_dir_mov/{{id}}" class="btn btn-primary btn-xl rounded-pill mt-5"> Add a movie</a>
-        <a href="/add_dir_act/{{id}}" class="btn btn-primary btn-xl rounded-pill mt-5"> Add a Actor</a>
+        <a href="/add_movie" class="btn btn-primary btn-xl rounded-pill mt-5"> Add a movie</a>
+        <a href="/add_actor" class="btn btn-primary btn-xl rounded-pill mt-5"> Add a Actor</a>
         {% else %}
         <a href="/login" class="btn btn-primary btn-xl rounded-pill mt-5">Log in to edit!</a>
         {% endif %}
@@ -69,6 +69,9 @@
     <div class="bg-circle-3 bg-circle"></div>
     <div class="bg-circle-4 bg-circle"></div>
   </header>
+
+  
+
 
  <br>
   <section>
@@ -81,20 +84,13 @@
 
       <table class="table table-striped">
         <tr>
-          <th>Movie</th
-          <th></th>
+          <th>Movie</th>
           <th></th>
         </tr>
         {% for row in mov_rows %}
           <tr>
-            <td>{{row[2]}}</td>
-            <td>
-              <form action="del_mov_dir" method="post" class="btn btn-default pull-right">
-              <input type="hidden" name="mov" value={{row[0]}}>
-              <input type="hidden" name="dir" value={{row[1]}}>
-              <input type="submit" value="X"/>
-            </form>
-            </td>
+            <td>{{row[1]}}</td>
+            <td><a class="btn btn-default pull-right" href="/edit_director_movie/id={{row[0]}}" role="button">Edit</a></td>
           </tr>
         {% endfor %}
       </table>
@@ -106,18 +102,10 @@
       <table class="table table-striped">
         <tr>
           <th>Actors</th>
-          <th></th>
         </tr>
         {% for row in act_rows %}
           <tr>
             <td>{{row[1]}}</td>
-            <td>
-              <form action="del_act_dir" method="post" class="btn btn-default pull-right">
-              <input type="hidden" name="dir" value={{id}}>
-              <input type="hidden" name="act" value={{row[0]}}>
-              <input type="submit" value="X"/>
-            </form>
-            </td>
           </tr>
         {% endfor %}
       </table>

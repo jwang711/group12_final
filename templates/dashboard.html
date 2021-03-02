@@ -58,14 +58,6 @@
     <div class="masthead-content">
       <div class="container">
         <h1>Hello {{session.username}}</h1>
-        <form action="up_user" method="post" class="btn btn-primary">
-              <input type="hidden" name="user" value={{session.username}}>
-              <input type="submit" value="UPDATE INFO"/>
-        </form>
-        <form action="del_user" method="post" class="btn btn-primary">
-              <input type="hidden" name="user" value={{session.username}}>
-              <input type="submit" value="DELETE ACCOUNT"/>
-        </form>
       </div>
     </div>
     <div class="bg-circle-1 bg-circle"></div>
@@ -78,6 +70,11 @@
   <section>
     <div class="container">
       <div class="row align-items-center">
+
+        {% for row in rows %}
+        <input type="hidden" name="reviewer_id" value = "{{row[0]}}">
+        {% endfor %}
+
         <table class="table table-striped">
           <tr>
             <th>Name</th>
@@ -85,12 +82,15 @@
           </tr>
           {% block rows %}
           <tr>
-            <td>{{rows[0]}}</td>
             <td>{{rows[1]}}</td>
+            <td>{{rows[2]}}</td>
           </tr>
           {% endblock %}
         </table>
       
+        {% for row in results %}
+        <input type="hidden" name="movie_id" value = "{{row[0]}}">
+        {% endfor %}
         <table class="table table-striped">
           <tr>
             <th>Movie</th>
@@ -98,24 +98,21 @@
             <th>Rating Date</th>
             <th>Review</th>
             <th></th>
+            <th></th>
           </tr>
           {% for row in results %}
             <tr>
-                  <form action="up_rev" method="POST" class="btn btn-default pull-right" id="reviewForm">
-                  <td>{{row[0]}}</td>
-                  <td><input type="hidden" name="movieID" value={{row[4]}} form="reviewForm"></td>
-                  <td><input type="text" name="rating" value={{row[1]}} form="reviewForm"></td>
-                  <td>{{row[3]}}</td>
-                  <td><textarea name="review" rows="4" cols="50" form="reviewForm">{{row[2]}}</textarea></td>
-                  <td><input type="submit" value="UPDATE"/></td>
-                  </form>
-
-                  <td>
-                  <form action="del_rev" method="post" class="btn btn-default pull-right">
-                  <input type="hidden" name="mov" value={{row[4]}}>
-                  <input type="submit" value="X"/>
-                  </form>
-                  </td>
+              <td>{{row[1]}}</td>
+              <td>{{row[2]}}</td>
+              <td>{{row[4]}}</td>
+              <td>{{row[3]}}</td>
+              <td><a class="btn btn-default pull-right" href="/edit_review/{{row[0]}}" role="button">Edit</a></td>
+              <td>
+                <form action="{{url_for('delete_movie', movieId=row[0])}}" method="post">
+                  <input type="hidden" name="_method" value="DELETE">
+                  <input type="submit" value="Delete" class="btn btn-default pull-right">
+                </form>
+              </td>
             </tr>
           {% endfor %}
         </table>

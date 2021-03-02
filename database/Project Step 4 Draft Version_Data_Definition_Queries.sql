@@ -69,8 +69,9 @@ CREATE TABLE `Movies` (
   `genre` varchar(50) NOT NULL,
   `boxOffice` bigint(20) DEFAULT NULL,
   `year` int(11) NOT NULL,
-  PRIMARY KEY (`movieid`),
-  UNIQUE KEY `movieId` (`movieId`)
+  `firstName` varchar(50) NOT NULL,
+  `lastName` varchar(50) NOT NULL,
+  PRIMARY KEY (`movieid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -81,12 +82,11 @@ CREATE TABLE `Movies` (
 LOCK TABLES `Movies` WRITE;
 /*!40000 ALTER TABLE `Movies` DISABLE KEYS */;
 INSERT INTO `Movies` VALUES 
-('Soul',2948372,NULL,'animation,adventure,comedy',96200000,2020),
-('Hamilton',8503618,40000000,'animation,adventure,comedy',NULL,2019),
-('1917',8579674,95000000,'drama,thriller,war',384877547,2019),
-('Joker',7286456,55000000,'crime,drama,thriller',1074251311,2019),
-('Avengers: Endgame',4154796,356000000,'action,adventure,drama',2797800564,2019),
-('Andhadhun',4500000,356000000,'crime,drama,music',62475342,2018);
+('Soul',2948372,175000000,'animation,adventure,comedy',96200000,2020,'Pete','Docter'),
+('Up',8579675,175000000, 'Animation, Adventure, Comedy',735099102,2009,'Pete','Docter'),
+('Andhadhun',5830512,356000000,'crime,drama,music',62475342,2018,'Sriram', 'Raghavan'),
+('Gone Girl',8579680,61000000,'drama,mystery,thriller',369330363,2014,'David', 'Fincher'),
+('The Dark Knight Rises',8579681,250000000,'action, adventure',1081142612,2012,'Christopher', 'Nolan');
 /*!40000 ALTER TABLE `Movies` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -111,8 +111,8 @@ CREATE TABLE `Ratings` (
   UNIQUE KEY `ratings_unique` (`movieId`,`reviewerId`),
   KEY `ratings_fk_movie` (`movieId`),
   KEY `ratings_fk_reviewer` (`reviewerId`),
-  CONSTRAINT `ratings_fk_movie` FOREIGN KEY (`movieId`) REFERENCES `Movies` (`movieId`) ON UPDATE CASCADE,
-  CONSTRAINT `ratings_fk_reviewer` FOREIGN KEY (`reviewerId`) REFERENCES `Reviewers` (`reviewerId`) ON UPDATE CASCADE
+  FOREIGN KEY (`movieId`) REFERENCES `Movies` (`movieId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`reviewerId`) REFERENCES `Reviewers` (`reviewerId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -124,11 +124,7 @@ LOCK TABLES `Ratings` WRITE;
 /*!40000 ALTER TABLE `Ratings` DISABLE KEYS */;
 INSERT INTO `Ratings` VALUES 
 (2948372,1,'2020-02-15',8.0,'Just do yourself a favour and watch it, it is unmissable.'),
-(8503618,2,'2020-03-10',7.0,'Awesome screenplay Good story written Awesome acting'),
-(8579674,3,'2020-04-20',8.0,'This movie is a perfect example of how you can tell a nail-consuming thriller in a comedic way'),
-(7286456,4,'2020-05-31',9.0,'It is a very good movie'),
-(4154796,5,'2020-06-02',7.0,'First half is extraordinary, climax below ordinary.'),
-(4500000,6,'2020-07-07',8.0,'Brilliant acting');
+(2948372,2,'2020-03-10',7.0,'Awesome screenplay Good story written Awesome acting');
 /*!40000 ALTER TABLE `Ratings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -155,12 +151,9 @@ CREATE TABLE `Directors` (
 
 INSERT INTO `Directors` (`lastName`, `firstName`) VALUES 
 ('Docter', 'Pete'),
-('Kail', 'Thomas'),
-('Mendes', 'Sam'),
-('Phillips', 'Todd'),
-('Russo', 'Joe'),
-('Russo', 'Anthony'),
-('Raghavan', 'Siriam');
+('Siriam', 'Raghavan'),
+('Fincher', 'David'),
+('Nolan', 'Christopher');
 /*!40000 ALTER TABLE `Directors` ENABLE KEYS */;
 
 
@@ -247,7 +240,6 @@ CREATE TABLE `ActMovies` (
   FOREIGN KEY (`actorId`) REFERENCES `Actors` (`actorId`) ON DELETE CASCADE,
   FOREIGN KEY (`movieId`) REFERENCES `Movies` (`movieId`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 INSERT INTO `ActMovies` (`actorId`, `movieId`) VALUES 
 (1, 2948372),
 (2, 2948372),
