@@ -58,6 +58,7 @@
         {% for row in results2 %}
         <h1 class="masthead-heading mb-0">{{row[0]}}</h1>
         {% endfor %}
+        <!-- <h2 class="masthead-subheading mb-0">Honest Reviews</h2> -->
         {% if session.logged_in != NULL %}
         <a href="/add_review/{{id}}" class="btn btn-primary btn-xl rounded-pill mt-5"> Review this title</a>
         {% else %}
@@ -99,6 +100,8 @@
           <th>Username</th>
           <th>Rating</th>
           <th>Reviews</th>
+          <th></th>
+          <th></th>
         </tr>
         {% for row in results1 %}
           <tr>

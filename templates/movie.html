@@ -81,38 +81,40 @@
 
         <table class="table table-striped">
             <tr>
+            <th></th>
+            <th></th>
+            <th></th>
             <th>Movie</th>
             <th>Budget</th>
             <th>Genre</th>
             <th>Box office</th>
             <th>Year</th>
-            <th>Director</th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
             </tr>
             {% for row in rows %}
             <tr>
-                <td>{{row[1]}}</td>
-                <td>{{row[2]}}</td>
-                <td>{{row[3]}}</td>
-                <td>{{row[4]}}</td>
-                <td>{{row[5]}}</td>
-                <td>{{row[6]}}</td>
-                <td>{{row[7]}}</td>
                 <td><a href="view_rating/{{row[0]}}" class="btn btn-default pull-right">View</a></td>
-                <td><a href="edit_movie/{{row[0]}}" class="btn btn-default pull-right">Edit</a></td>
                 <td>
-                  <form action="{{url_for('delete_movie', movieId=row[0])}}" method="post">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <input type="submit" value="Delete" class="btn btn-default pull-right">
+                    <form action="up_mov" method="POST" class="btn btn-default pull-right" id="movieForm">
+                    <td><input type="hidden" name="movID" value={{row[0]}}></td>
+                    <td><textarea name="movie" rows="1">{{row[1]}}</textarea></td>
+                    <td><input type="text" name="budget" value={{row[2]}} ></td>
+                    <td><input type="text" name="genre" value={{row[3]}} ></td>
+                    <td><input type="text" name="box" value={{row[4]}} ></td>
+                    <td><input type="text" name="year" value={{row[5]}}></td>
+                {% if session.logged_in != NULL %}
+                    <td><input type="submit" value="UPDATE" /></td>
+                    </form>
+
+                </td>
+                <td>
+                  <form action="del_mov" method="POST" class="btn btn-default pull-right">
+                  <input type="hidden" name="mov" value={{row[0]}}>
+                  <input type="submit" value="X"/>
                   </form>
                 </td>
+                {% endif %}
             </tr>
             {% endfor %}
-            
-
         </table>
         {% endblock %}
         <!-- </div> -->

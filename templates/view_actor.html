@@ -58,8 +58,8 @@
         <h1 class="masthead-heading mb-0">{{name}}</h1>
         <!-- <h2 class="masthead-subheading mb-0">Honest Reviews</h2> -->
         {% if session.logged_in != NULL %}
-        <a href="/add_movie" class="btn btn-primary btn-xl rounded-pill mt-5"> Add a Movie</a>
-        <a href="/add_director" class="btn btn-primary btn-xl rounded-pill mt-5"> Add a Director</a>
+        <a href="/add_act_mov/{{id}}" class="btn btn-primary btn-xl rounded-pill mt-5"> Add a Movie</a>
+        <a href="/add_act_dir/{{id}}" class="btn btn-primary btn-xl rounded-pill mt-5"> Add a Director</a>
         {% else %}
         <a href="/login" class="btn btn-primary btn-xl rounded-pill mt-5">Log in to edit!</a>
         {% endif %}
@@ -83,10 +83,19 @@
       <table class="table table-striped">
         <tr>
           <th>Movie</th
+          <th></th>
+          <th></th>
         </tr>
         {% for row in mov_rows %}
           <tr>
-            <td>{{row[1]}}</td>
+            <td>{{row[2]}}</td>
+            <td>
+              <form action="del_mov_act" method="post" class="btn btn-default pull-right">
+              <input type="hidden" name="mov" value={{row[0]}}>
+              <input type="hidden" name="act" value={{row[1]}}>
+              <input type="submit" value="X"/>
+            </form>
+            </td>
           </tr>
         {% endfor %}
       </table>
@@ -98,10 +107,19 @@
       <table class="table table-striped">
         <tr>
           <th>Directors</th>
+          <th></th>
+          <th></th>
         </tr>
         {% for row in dir_rows %}
           <tr>
-            <td>{{row[1]}}</td>
+            <td>{{row[2]}}</td>
+            <td>
+              <form action="del_act_dir" method="post" class="btn btn-default pull-right">
+              <input type="hidden" name="dir" value={{row[0]}}>
+              <input type="hidden" name="act" value={{row[1]}}>
+              <input type="submit" value="X"/>
+            </form>
+            </td>
           </tr>
         {% endfor %}
       </table>
