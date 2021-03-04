@@ -3,23 +3,27 @@ from db_connector import connect_to_database, execute_query
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators, IntegerField
 from passlib.hash import sha256_crypt
 from datetime import date
+import os
 
 app = Flask(__name__)
-app.secret_key='thisissecretdontshare'
+app.secret_key = 'thisissecretdontshare'
 
-#Search Form
+
+# Search Form
 class SearchForm(Form):
     title = StringField('')
 
-#Index
+
+# Index
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = SearchForm(request.form)
     if request.method == 'POST':
         return search_results(form)
-    return render_template('index.html',form=form)
-    
-#endpoint for search
+    return render_template('index.html', form=form)
+
+
+# endpoint for search
 @app.route('/search')
 def search_results(search):
     db_connection = connect_to_database()
@@ -27,18 +31,18 @@ def search_results(search):
     if request.method == "POST":
         title = request.form['title']
         search_query = "SELECT movieId,title,genre,year FROM Movies WHERE title = %s"
-        search_results = execute_query(db_connection,search_query,[title]).fetchone()
+        search_results = execute_query(db_connection, search_query, [title]).fetchone()
         # print(search_results)
-        if search_results: #display results
+        if search_results:  # display results
             session['title'] = title
-            return render_template('search.html',form = form,search_results = search_results)
+            return render_template('search.html', form=form, search_results=search_results)
         else:
             flash('No results found! You can help others by adding it')
             return redirect(url_for('add_movie'))
 
 
 # Register Form
-#reference: https://flask.palletsprojects.com/en/1.1.x/patterns/wtforms/
+# reference: https://flask.palletsprojects.com/en/1.1.x/patterns/wtforms/
 class RegisterForm(Form):
     name = StringField('Name', [validators.Length(min=1, max=50)])
     username = StringField('Username', [validators.Length(min=1, max=50)])
@@ -62,7 +66,7 @@ def register():
         password = sha256_crypt.encrypt(str(form.password.data))
 
         query = 'INSERT INTO Reviewers (name,username,email,password) VALUES (%s,%s,%s,%s)'
-        data = (name,username,email,password)
+        data = (name, username, email, password)
         execute_query(db_connection, query, data)
 
         flash('You have successfully signed up. To continue with the site please log in now')
@@ -79,7 +83,7 @@ def login():
         password_candidate = request.form['password']
 
         people_query = "SELECT * FROM Reviewers WHERE username = %s"
-        people_result = execute_query(db_connection,people_query,[username]).fetchone()
+        people_result = execute_query(db_connection, people_query, [username]).fetchone()
         # print(people_result)
         if people_result != None:
             # Get the correct password from databse
@@ -91,14 +95,15 @@ def login():
 
                 flash('Welcome')
                 return redirect(url_for('dashboard'))
-            else: #password does not match
+            else:  # password does not match
                 error = 'There was a problem, your password is incorrect'
                 return render_template('login.html', error=error)
         else:
             error = "Looks like you don't have an account with us, create an account to explore!"
-            return render_template('login.html',error=error)
+            return render_template('login.html', error=error)
 
     return render_template('login.html')
+
 
 # Logout
 @app.route('/logout')
@@ -106,6 +111,7 @@ def signout():
     session.clear()
     flash('You are now signed out')
     return redirect(url_for('login'))
+
 
 # Dashboard
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -116,38 +122,47 @@ def dashboard():
     else:
         db_connection = connect_to_database()
         people_query = "SELECT name,email FROM Reviewers WHERE username = %s"
-        people_result = execute_query(db_connection, people_query,[session['username']]).fetchone()
-        #print(people_result,people_result[0],people_result[1])
+        people_result = execute_query(db_connection, people_query, [session['username']]).fetchone()
+        # print(people_result,people_result[0],people_result[1])
         print(session['username'])
         rating_query = "SELECT title,rating,review,ratingDate, Ratings.movieId FROM Ratings inner join Movies on Ratings.movieId  = Movies.movieId where reviewerId in (SELECT reviewerId FROM Reviewers WHERE username = %s)"
-        rating_result = execute_query(db_connection, rating_query,[session['username']]).fetchall()
+        rating_result = execute_query(db_connection, rating_query, [session['username']]).fetchall()
         # print(rating_result)
         if rating_result:
-            return render_template('dashboard.html',results=rating_result, rows=people_result,form=form)
+            return render_template('dashboard.html', results=rating_result, rows=people_result, form=form)
 
-        return render_template('dashboard.html',rows=people_result,form=form)
+        return render_template('dashboard.html', rows=people_result, form=form)
+
+
 @app.route('/up_user', methods=['POST'])
 def up_user():
     db_connection = connect_to_database()
     form = RegisterForm(request.form)
+    select_query = "SELECT * FROM Reviewers WHERE username='%s'" % (session['username'])
+    results = execute_query(db_connection, select_query).fetchone()
+    form.name.data = results[1]
+    form.username.data = results[2]
+    form.email.data = results[3]
     if request.method == 'POST' and form.validate():
-        name = form.name.data
-        username = form.username.data
-        email = form.email.data
+        name = request.form['name']
+        username = request.form['username']
+        email = request.form['email']
         password = sha256_crypt.encrypt(str(form.password.data))
 
-        query = 'UPDATE Reviewers SET name=%s, username=%s, email=%s, password=%s WHERE reviewerId = (SELECT reviewerId FROM Reviewers WHERE username=%s)'
-        data = (name,username,email,password, session['username'])
+        query = "UPDATE Reviewers SET name=%s, username=%s, email=%s, password=%s WHERE reviewerId = (SELECT reviewerId FROM Reviewers WHERE username=%s)"
+        data = (name, username, email, password, session['username'])
         execute_query(db_connection, query, data)
         session['username'] = username
         flash('You have successfully updated your information')
         return redirect(url_for('dashboard'))
     return render_template('register.html', form=form, heading="Update your information")
 
+
 @app.route('/del_user', methods=['POST'])
 def del_user():
     username = request.form['user']
-    rev_query = "DELETE FROM Reviewers WHERE reviewerId=(SELECT reviewerId FROM Reviewers WHERE username=%s)" % (username)
+    rev_query = "DELETE FROM Reviewers WHERE reviewerId=(SELECT reviewerId FROM Reviewers WHERE username='%s')" % (
+        username)
     db_connection = connect_to_database()
     try:
         execute_query(db_connection, rev_query)
@@ -157,9 +172,10 @@ def del_user():
         print('username: ', request.form['user'])
         return redirect(request.referrer)
 
+
 # Movie Form Class
-#reference: https://flask.palletsprojects.com/en/1.1.x/patterns/wtforms/
-#reference: https://wtforms.readthedocs.io/en/2.3.x/fields/
+# reference: https://flask.palletsprojects.com/en/1.1.x/patterns/wtforms/
+# reference: https://wtforms.readthedocs.io/en/2.3.x/fields/
 class MovieForm(Form):
     title = StringField('Title', [validators.Length(min=1, max=100)])
     genre = StringField('Genre', [validators.Length(min=1, max=100)])
@@ -167,16 +183,20 @@ class MovieForm(Form):
     budget = IntegerField('Budget')
     box_office = IntegerField('Box office')
 
+
 class castForm(Form):
     fname = StringField('First Name', [validators.Length(min=1, max=100)])
     lname = StringField('Last Name', [validators.Length(min=1, max=100)])
 
+
 class mov_Form(Form):
     movTitle = StringField('Title of Movie', [validators.Length(min=1, max=100)])
+
 
 class reviewForm(Form):
     rating = IntegerField('Rating', [validators.NumberRange(min=0, max=10)])
     review = StringField('Review', [validators.Length(min=1, max=10000)])
+
 
 # Movies
 @app.route('/movie', methods=['GET', 'POST'])
@@ -187,11 +207,12 @@ def movie():
     else:
         db_connection = connect_to_database()
         movie_query = "SELECT movieId,title,CONCAT('$', FORMAT(budget,'C0')),genre,CONCAT('$', FORMAT(boxOffice,'C0')),year FROM Movies"
-        movie_result = execute_query(db_connection,movie_query).fetchall()
+        movie_result = execute_query(db_connection, movie_query).fetchall()
         print(movie_result)
 
-        return render_template('movie.html', rows=movie_result,form=form)
-    return render_template('movie.html',form=form)
+        return render_template('movie.html', rows=movie_result, form=form)
+    return render_template('movie.html', form=form)
+
 
 # Add Movie
 @app.route('/add_movie', methods=['GET', 'POST'])
@@ -206,12 +227,13 @@ def add_movie():
         box_office = form.box_office.data
 
         movie_query = 'INSERT INTO Movies (title,budget,genre,boxOffice,year) VALUES (%s,%s,%s,%s,%s)'
-        data = (title,budget,genre,box_office,release_year)
+        data = (title, budget, genre, box_office, release_year)
         execute_query(db_connection, movie_query, data)
 
         return redirect(url_for('movie'))
 
     return render_template('add_movie.html', form=form)
+
 
 # Update movie
 @app.route('/up_mov', methods=['POST'])
@@ -222,10 +244,11 @@ def up_mov():
     genre = request.form.get('genre')
     box = request.form.get('box')
     year = request.form.get('year')
-    budget = int(budget.replace('$','').replace(",",""))
-    box = int(box.replace('$', '').replace(",",""))
+    budget = int(budget.replace('$', '').replace(",", ""))
+    box = int(box.replace('$', '').replace(",", ""))
     year = int(year)
-    mov_query = "UPDATE Movies SET title='%s', budget=%s, genre='%s', boxOffice=%s, year=%s WHERE movieId=%s" % (movie, budget, genre, box, year, movID)
+    mov_query = "UPDATE Movies SET title='%s', budget=%s, genre='%s', boxOffice=%s, year=%s WHERE movieId=%s" % (
+    movie, budget, genre, box, year, movID)
     db_connection = connect_to_database()
     try:
         execute_query(db_connection, mov_query)
@@ -233,6 +256,8 @@ def up_mov():
     except:
         print("did not work")
         return redirect(request.referrer)
+
+
 # Display user reviews
 @app.route('/reviews', methods=['GET', 'POST'])
 def user_reviews():
@@ -244,10 +269,11 @@ def user_reviews():
         rating_query = 'SELECT Ratings.movieId,rating,title,username,ratingDate,review FROM Ratings inner join Movies ON Ratings.movieId = Movies.movieId inner join Reviewers on Reviewers.reviewerId = Ratings.reviewerId'
         # print(rating_query)
         results = execute_query(db_connection, rating_query).fetchall()
-        return render_template('reviews.html', rows=results,form=form)
+        return render_template('reviews.html', rows=results, form=form)
     return render_template('reviews.html', form=form)
 
-#add a new review
+
+# add a new review
 @app.route('/add_review/<int:movieId>', methods=['GET', 'POST'])
 def add_review(movieId):
     form = reviewForm(request.form)
@@ -264,22 +290,27 @@ def add_review(movieId):
         return redirect(url_for('view_rating', movieId=movieId))
     return render_template('add_review.html', form=form)
 
-#view ratings of individual movie
+
+# view ratings of individual movie
 @app.route('/view_rating/<int:movieId>')
 def view_rating(movieId):
     db_connection = connect_to_database()
-    view_query = "SELECT Reviewers.username,rating,review, Ratings.movieId FROM Reviewers inner join Ratings on Reviewers.reviewerId = Ratings.reviewerId WHERE Ratings.movieId = %s"  % (movieId)
-    selectedmovie = "SELECT title,CONCAT('$', FORMAT(budget,'C0')),round(avg(rating),1),genre,CONCAT('$', FORMAT(boxOffice,'C0')),year FROM Movies inner join Ratings on Movies.movieId = Ratings.movieId WHERE Movies.movieId = %s"  % (movieId)
+    view_query = "SELECT Reviewers.username,rating,review, Ratings.movieId FROM Reviewers inner join Ratings on Reviewers.reviewerId = Ratings.reviewerId WHERE Ratings.movieId = %s" % (
+        movieId)
+    selectedmovie = "SELECT title,CONCAT('$', FORMAT(budget,'C0')),round(avg(rating),1),genre,CONCAT('$', FORMAT(boxOffice,'C0')),year FROM Movies inner join Ratings on Movies.movieId = Ratings.movieId WHERE Movies.movieId = %s" % (
+        movieId)
 
     results1 = execute_query(db_connection, view_query)
     results2 = execute_query(db_connection, selectedmovie)
     return render_template('view_rating.html', results1=results1, results2=results2, id=movieId)
 
+
 # Delete Review
 @app.route('/del_rev', methods=['POST'])
 def del_rev():
     movieId = int(request.form['mov'])
-    rev_query = "DELETE FROM Ratings WHERE movieId=%s and reviewerId=(SELECT reviewerId FROM Reviewers WHERE username='%s')" % (movieId, session['username'])
+    rev_query = "DELETE FROM Ratings WHERE movieId=%s and reviewerId=(SELECT reviewerId FROM Reviewers WHERE username='%s')" % (
+    movieId, session['username'])
     db_connection = connect_to_database()
     try:
         execute_query(db_connection, rev_query)
@@ -290,6 +321,7 @@ def del_rev():
         print('username: ', request.form['user'])
         return redirect(request.referrer)
 
+
 # Update Review
 @app.route('/up_rev', methods=['POST'])
 def up_rev():
@@ -297,7 +329,8 @@ def up_rev():
     rating = request.form['rating']
     review = request.form['review']
 
-    rev_query = "UPDATE Ratings SET rating=%s, ratingDate=CURDATE(), review='%s' WHERE movieId=%s AND reviewerId=(SELECT reviewerId FROM Reviewers WHERE username='%s')" % (rating, review, movieID, session['username'])
+    rev_query = "UPDATE Ratings SET rating=%s, ratingDate=CURDATE(), review='%s' WHERE movieId=%s AND reviewerId=(SELECT reviewerId FROM Reviewers WHERE username='%s')" % (
+    rating, review, movieID, session['username'])
     db_connection = connect_to_database()
     try:
         execute_query(db_connection, rev_query)
@@ -306,7 +339,8 @@ def up_rev():
         print("did not work")
         return redirect(request.referrer)
 
-#Display list of directors
+
+# Display list of directors
 @app.route('/director', methods=['GET', 'POST'])
 def director():
     form = SearchForm(request.form)
@@ -316,23 +350,28 @@ def director():
         db_connection = connect_to_database()
         dir_query = "SELECT directorId, firstName, lastName as dir_name FROM Directors ORDER BY lastName"
         dir_results = execute_query(db_connection, dir_query).fetchall()
-        return render_template('director.html', rows=dir_results,form=form)
+        return render_template('director.html', rows=dir_results, form=form)
     return render_template('director.html', form=form)
 
-#Display individual director
+
+# Display individual director
 @app.route('/director/id=<int:directorId>')
 def view_dir(directorId):
     db_connection = connect_to_database()
-    view_mov_query = "SELECT Movies.movieId, Directors.directorId, Movies.title FROM Movies JOIN DirMovies ON Movies.movieId = DirMovies.movieId JOIN Directors ON DirMovies.directorId = Directors.directorId WHERE Directors.directorId = %s" % (directorId)
-    view_act_query = "SELECT Actors.actorId, CONCAT(Actors.firstName, ' ', Actors.lastName) as act_name FROM Actors JOIN DirActors ON Actors.actorId = DirActors.actorId LEFT JOIN Directors ON DirActors.directorId = Directors.directorId WHERE Directors.directorId = %s"  % (directorId)
-    dirName = "SELECT CONCAT(Directors.firstName, ' ', Directors.lastName) as dir_name FROM Directors WHERE directorId = %s" % (directorId)
+    view_mov_query = "SELECT Movies.movieId, Directors.directorId, Movies.title FROM Movies JOIN DirMovies ON Movies.movieId = DirMovies.movieId JOIN Directors ON DirMovies.directorId = Directors.directorId WHERE Directors.directorId = %s" % (
+        directorId)
+    view_act_query = "SELECT Actors.actorId, CONCAT(Actors.firstName, ' ', Actors.lastName) as act_name FROM Actors JOIN DirActors ON Actors.actorId = DirActors.actorId LEFT JOIN Directors ON DirActors.directorId = Directors.directorId WHERE Directors.directorId = %s" % (
+        directorId)
+    dirName = "SELECT CONCAT(Directors.firstName, ' ', Directors.lastName) as dir_name FROM Directors WHERE directorId = %s" % (
+        directorId)
     mov_results = execute_query(db_connection, view_mov_query)
     act_results = execute_query(db_connection, view_act_query)
     dir_results = execute_query(db_connection, dirName)
     for rows in dir_results:
         name = rows
     name = name[0]
-    return render_template('view_director.html', mov_rows=mov_results, act_rows=act_results, name = name, id = directorId)
+    return render_template('view_director.html', mov_rows=mov_results, act_rows=act_results, name=name, id=directorId)
+
 
 # Add Director
 @app.route('/add_director', methods=['GET', 'POST'])
@@ -345,7 +384,7 @@ def add_director():
         dir_query = 'INSERT INTO Directors (lastName, firstName) VALUES (%s,%s)'
         data = (lname, fname)
         execute_query(db_connection, dir_query, data)
-        dirID_query = "SELECT directorId FROM Directors WHERE lastName = '%s' AND firstName = '%s'" %(lname, fname)
+        dirID_query = "SELECT directorId FROM Directors WHERE lastName = '%s' AND firstName = '%s'" % (lname, fname)
         result = execute_query(db_connection, dirID_query).fetchall()
         for rows in result:
             dirID = rows
@@ -354,6 +393,7 @@ def add_director():
 
     return render_template('add_director.html', form=form)
 
+
 # Add Movie to Director's list
 @app.route('/add_dir_mov/<int:directorId>', methods=['GET', 'POST'])
 def add_dir_mov(directorId):
@@ -361,7 +401,8 @@ def add_dir_mov(directorId):
     db_connection = connect_to_database()
     if request.method == 'POST':
         movTitle = form.movTitle.data
-        dm_query = "INSERT INTO DirMovies (directorId, movieId) VALUES (%s,(SELECT movieID FROM Movies WHERE title='%s'))" % (directorId, movTitle)
+        dm_query = "INSERT INTO DirMovies (directorId, movieId) VALUES (%s,(SELECT movieID FROM Movies WHERE title='%s'))" % (
+        directorId, movTitle)
         try:
             execute_query(db_connection, dm_query)
             return redirect(url_for('view_dir', directorId=directorId))
@@ -370,7 +411,8 @@ def add_dir_mov(directorId):
 
     return render_template('add_dir_mov.html', form=form)
 
-#Add actor to director
+
+# Add actor to director
 @app.route('/add_dir_act/<int:directorId>', methods=['GET', 'POST'])
 def add_dir_act(directorId):
     form = castForm(request.form)
@@ -378,7 +420,8 @@ def add_dir_act(directorId):
     if request.method == 'POST':
         fname = form.fname.data
         lname = form.lname.data
-        ad_query = "INSERT INTO DirActors (directorId, actorId) VALUES (%s,(SELECT actorId FROM Actors WHERE firstName = '%s' AND lastName = '%s'))" % (directorId, fname, lname)
+        ad_query = "INSERT INTO DirActors (directorId, actorId) VALUES (%s,(SELECT actorId FROM Actors WHERE firstName = '%s' AND lastName = '%s'))" % (
+        directorId, fname, lname)
         try:
             execute_query(db_connection, ad_query)
             return redirect(url_for('view_dir', directorId=directorId))
@@ -386,6 +429,7 @@ def add_dir_act(directorId):
             return render_template('error_add_actor.html')
 
     return render_template('add_dir_act.html', form=form)
+
 
 # Delete Director
 @app.route('/del_dir', methods=['POST'])
@@ -402,6 +446,7 @@ def del_dir():
     except:
         return redirect(request.referrer)
 
+
 # Delete Actor from Director
 @app.route('/director/del_act_dir', methods=['POST'])
 def del_act_dir():
@@ -412,6 +457,7 @@ def del_act_dir():
         return redirect(request.referrer)
     except:
         return redirect(request.referrer)
+
 
 # Update Director
 @app.route('/up_dir', methods=['POST'])
@@ -428,7 +474,8 @@ def up_dir():
         print("did not work")
         return redirect(request.referrer)
 
-#Display list of actors
+
+# Display list of actors
 @app.route('/actor', methods=['GET', 'POST'])
 def actor():
     form = SearchForm(request.form)
@@ -438,16 +485,20 @@ def actor():
         db_connection = connect_to_database()
         act_query = "SELECT actorId, firstName, lastName FROM Actors ORDER BY lastName"
         act_results = execute_query(db_connection, act_query).fetchall()
-        return render_template('actor.html', rows=act_results,form=form)
+        return render_template('actor.html', rows=act_results, form=form)
 
-#Display individual actor
+
+# Display individual actor
 @app.route('/actor/id=<int:actorId>')
 def view_act(actorId):
     db_connection = connect_to_database()
-    view_mov_query = "SELECT Movies.movieId, Actors.actorId, Movies.title FROM Movies JOIN ActMovies ON Movies.movieId = ActMovies.movieId JOIN Actors ON ActMovies.actorId = Actors.actorId WHERE Actors.actorId = %s ORDER BY Movies.year" % (actorId)
+    view_mov_query = "SELECT Movies.movieId, Actors.actorId, Movies.title FROM Movies JOIN ActMovies ON Movies.movieId = ActMovies.movieId JOIN Actors ON ActMovies.actorId = Actors.actorId WHERE Actors.actorId = %s ORDER BY Movies.year" % (
+        actorId)
 
-    view_dir_query = "SELECT Directors.directorId, Actors.actorId, CONCAT(Directors.firstName, ' ', Directors.lastName) as dir_name FROM Directors JOIN DirActors ON Directors.directorId = DirActors.directorId LEFT JOIN Actors ON DirActors.actorId = Actors.actorId WHERE Actors.actorId = %s" % (actorId)
-    actName_query = "SELECT CONCAT(Actors.firstName, ' ', Actors.lastName) as act_name FROM Actors WHERE actorId = %s" % (actorId)
+    view_dir_query = "SELECT Directors.directorId, Actors.actorId, CONCAT(Directors.firstName, ' ', Directors.lastName) as dir_name FROM Directors JOIN DirActors ON Directors.directorId = DirActors.directorId LEFT JOIN Actors ON DirActors.actorId = Actors.actorId WHERE Actors.actorId = %s" % (
+        actorId)
+    actName_query = "SELECT CONCAT(Actors.firstName, ' ', Actors.lastName) as act_name FROM Actors WHERE actorId = %s" % (
+        actorId)
 
     mov_results = execute_query(db_connection, view_mov_query)
     dir_results = execute_query(db_connection, view_dir_query)
@@ -458,7 +509,8 @@ def view_act(actorId):
 
     return render_template('view_actor.html', mov_rows=mov_results, dir_rows=dir_results, name=name, id=actorId)
 
-#Add a new actor
+
+# Add a new actor
 @app.route('/add_actor', methods=['GET', 'POST'])
 def add_actor():
     form = castForm(request.form)
@@ -472,7 +524,7 @@ def add_actor():
         act_query = 'INSERT INTO Actors (lastName, firstName) VALUES (%s,%s)'
         data = (lname, fname)
         execute_query(db_connection, act_query, data)
-        actID_query = "SELECT actorId FROM Actors WHERE lastName = '%s' AND firstName = '%s'" %(lname, fname)
+        actID_query = "SELECT actorId FROM Actors WHERE lastName = '%s' AND firstName = '%s'" % (lname, fname)
         result = execute_query(db_connection, actID_query).fetchall()
         for rows in result:
             actID = rows
@@ -481,6 +533,7 @@ def add_actor():
 
     return render_template('add_actor.html', form=form)
 
+
 # Add Movie to Actor
 @app.route('/add_act_mov/<int:actorId>', methods=['GET', 'POST'])
 def add_act_mov(actorId):
@@ -488,7 +541,8 @@ def add_act_mov(actorId):
     db_connection = connect_to_database()
     if request.method == 'POST':
         movTitle = form.movTitle.data
-        am_query = "INSERT INTO ActMovies (actorId, movieId) VALUES (%s,(SELECT movieID FROM Movies WHERE title='%s'))" % (actorId, movTitle)
+        am_query = "INSERT INTO ActMovies (actorId, movieId) VALUES (%s,(SELECT movieID FROM Movies WHERE title='%s'))" % (
+        actorId, movTitle)
         try:
             execute_query(db_connection, am_query)
 
@@ -498,6 +552,7 @@ def add_act_mov(actorId):
 
     return render_template('add_act_mov.html', form=form)
 
+
 # Add Director to Actor
 @app.route('/add_act_dir/<int:actorId>', methods=['GET', 'POST'])
 def add_act_dir(actorId):
@@ -506,15 +561,16 @@ def add_act_dir(actorId):
     if request.method == 'POST':
         fname = form.fname.data
         lname = form.lname.data
-        ad_query = "INSERT INTO DirActors (actorId, directorId) VALUES (%s,(SELECT directorId FROM Directors WHERE firstName = '%s' AND lastName = '%s'))" % (actorId, fname, lname)
+        ad_query = "INSERT INTO DirActors (actorId, directorId) VALUES (%s,(SELECT directorId FROM Directors WHERE firstName = '%s' AND lastName = '%s'))" % (
+        actorId, fname, lname)
         try:
             execute_query(db_connection, ad_query)
             return redirect(url_for('view_act', actorId=actorId))
         except:
             return render_template('error_add_director.html')
 
-
     return render_template('add_act_dir.html', form=form)
+
 
 # Delete Director from Actor
 @app.route('/actor/del_act_dir', methods=['POST'])
@@ -528,7 +584,6 @@ def del_dir_act():
         return redirect(request.referrer)
 
 
-
 # Delete Movie from Actor
 @app.route('/actor/del_mov_act', methods=['POST'])
 def del_mov_act():
@@ -540,6 +595,7 @@ def del_mov_act():
     except:
         return redirect(request.referrer)
 
+
 # Delete Movie from Director
 @app.route('/director/del_mov_dir', methods=['POST'])
 def del_mov_dir():
@@ -550,6 +606,7 @@ def del_mov_dir():
         return redirect(request.referrer)
     except:
         return redirect(request.referrer)
+
 
 # Delete Movie
 @app.route('/del_mov', methods=['POST'])
@@ -567,7 +624,6 @@ def del_mov():
         return redirect(request.referrer)
 
 
-
 # Delete Actor
 @app.route('/del_act', methods=['POST'])
 def del_act():
@@ -582,6 +638,7 @@ def del_act():
         return redirect(request.referrer)
     except:
         return redirect(request.referrer)
+
 
 # Update Actor
 @app.route('/up_act', methods=['POST'])
@@ -600,7 +657,7 @@ def up_act():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 6924))
+    app.run(port=port, debug=True)
 
-
-#reference: https://realpython.com/python-web-applications-with-flask-part-ii/
+# reference: https://realpython.com/python-web-applications-with-flask-part-ii/
