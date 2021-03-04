@@ -5,6 +5,6 @@
 # in turn by all the Python code in this codebase to interact with the database
 
 host = 'classmysql.engr.oregonstate.edu'  #DON'T CHANGE ME UNLESS THE INSTRUCTIONS SAY SO
-user = 'cs340_wangjin3' #CHANGE ME
-passwd = '4056' #CHANGE ME
-db = 'cs340_wangjin3' #CHANGE ME
+user = 'cs340_hongbri' #CHANGE ME
+passwd = '6923' #CHANGE ME
+db = 'cs340_hongbri' #CHANGE ME
