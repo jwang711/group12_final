@@ -72,12 +72,19 @@ def register():
         email = form.email.data
         password = sha256_crypt.encrypt(str(form.password.data))
 
-        query = 'INSERT INTO Reviewers (name,username,email,password) VALUES (%s,%s,%s,%s)'
-        data = (name, username, email, password)
-        execute_query(db_connection, query, data)
+        #check if username is already in database
+        check_query = "SELECT reviewerId FROM Reviewers WHERE username='%s'" % username
+        check = execute_query(db_connection, check_query).fetchone()
+        if check:
+            error = "Username already taken!"
+            flash(error)
+        else:
+            query = 'INSERT INTO Reviewers (name,username,email,password) VALUES (%s,%s,%s,%s)'
+            data = (name, username, email, password)
+            execute_query(db_connection, query, data)
 
-        flash('You have successfully signed up. To continue with the site please log in now')
-        return redirect(url_for('login'))
+            flash('You have successfully signed up. To continue with the site please log in now')
+            return redirect(url_for('login'))
     return render_template('register.html', form=form, heaidng="Create a new account")
 
 
@@ -156,12 +163,19 @@ def up_user():
         email = request.form['email']
         password = sha256_crypt.encrypt(str(form.password.data))
 
-        query = "UPDATE Reviewers SET name=%s, username=%s, email=%s, password=%s WHERE reviewerId = (SELECT reviewerId FROM Reviewers WHERE username=%s)"
-        data = (name, username, email, password, session['username'])
-        execute_query(db_connection, query, data)
-        session['username'] = username
-        flash('You have successfully updated your information')
-        return redirect(url_for('dashboard'))
+        #check if username is already in database
+        check_query = "SELECT reviewerId FROM Reviewers WHERE username='%s'" % username
+        check = execute_query(db_connection, check_query).fetchone()
+        if check:
+            error = "Username already taken!"
+            flash(error)
+        else:
+            query = "UPDATE Reviewers SET name=%s, username=%s, email=%s, password=%s WHERE reviewerId = (SELECT reviewerId FROM Reviewers WHERE username=%s)"
+            data = (name, username, email, password, session['username'])
+            execute_query(db_connection, query, data)
+            session['username'] = username
+            flash('You have successfully updated your information')
+            return redirect(url_for('dashboard'))
     return render_template('register.html', form=form, heading="Update your information")
 
 @app.route('/del_user', methods=['POST'])
@@ -227,6 +241,7 @@ def add_movie():
         budget = form.budget.data
         box_office = form.box_office.data
 
+        #check if movie is already in database
         check_query = "SELECT movieId FROM Movies WHERE title='%s'" % (title)
         check = execute_query(db_connection, check_query).fetchone()
         if check:
