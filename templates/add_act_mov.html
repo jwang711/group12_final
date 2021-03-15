@@ -7,8 +7,13 @@
   {% from "includes/_formhelpers.html" import render_field %}
   <form method="POST" action="">
     <div class="form-group">
-      {{render_field(form.movTitle, class_="form-control") }}
+      <select name="movie">
+      {% for m in movies %}
+      <option value="{{m[1]}}" SELECTED>{{m[0]}}</option>
+      {% endfor %}
+      </select>
     </div>
     <p><input class="btn btn-primary" type="submit" value="Submit">
   </form>
+
 {% endblock %}

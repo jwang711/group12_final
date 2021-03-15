@@ -6,12 +6,11 @@
   
   {% from "includes/_formhelpers.html" import render_field %}
   <form method="POST" action="">
-    <div class="form-group">
-      {{render_field(form.fname, class_="form-control") }}
-    </div>
-    <div class="form-group">
-      {{render_field(form.lname, class_="form-control") }}
-    </div>
+      <select name="actors">
+      {% for a in actors %}
+      <option value="{{a[1]}}" SELECTED>{{a[0]}}</option>
+      {% endfor %}
+      </select>
     <p><input class="btn btn-primary" type="submit" value="Submit">
   </form>
 {% endblock %}

@@ -30,12 +30,19 @@ def search_results(search):
     form = SearchForm(request.form)
     if request.method == "POST":
         title = request.form['title']
-        search_query = "SELECT movieId,title,genre,year FROM Movies WHERE title = %s"
-        search_results = execute_query(db_connection, search_query, [title]).fetchone()
+        movie_query = "SELECT movieId FROM Movies WHERE title = '%s'" % title
+        actor_query = "SELECT actorId FROM Actors WHERE CONCAT(firstName, ' ', lastName) like '%s'" % title
+        director_query = "SELECT directorId FROM Directors WHERE CONCAT(firstName, ' ', lastName) like '%s'" % title
+        movie_results = execute_query(db_connection, movie_query).fetchone()
+        actor_results = execute_query(db_connection, actor_query).fetchone()
+        director_results = execute_query(db_connection, director_query).fetchone()
         # print(search_results)
-        if search_results:  # display results
-            session['title'] = title
-            return render_template('search.html', form=form, search_results=search_results)
+        if movie_results:  # display results
+            return redirect(url_for('view_rating', movieId=movie_results[0]))
+        if actor_results:  # display results
+            return redirect(url_for('view_act', actorId=actor_results[0]))
+        if director_results:  # display results
+            return redirect(url_for('view_dir', directorId=director_results[0]))
         else:
             flash('No results found! You can help others by adding it')
             return redirect(url_for('add_movie'))
@@ -157,7 +164,6 @@ def up_user():
         return redirect(url_for('dashboard'))
     return render_template('register.html', form=form, heading="Update your information")
 
-
 @app.route('/del_user', methods=['POST'])
 def del_user():
     username = request.form['user']
@@ -172,7 +178,6 @@ def del_user():
         print('username: ', request.form['user'])
         return redirect(request.referrer)
 
-
 # Movie Form Class
 # reference: https://flask.palletsprojects.com/en/1.1.x/patterns/wtforms/
 # reference: https://wtforms.readthedocs.io/en/2.3.x/fields/
@@ -183,20 +188,16 @@ class MovieForm(Form):
     budget = IntegerField('Budget')
     box_office = IntegerField('Box office')
 
-
 class castForm(Form):
     fname = StringField('First Name', [validators.Length(min=1, max=100)])
     lname = StringField('Last Name', [validators.Length(min=1, max=100)])
 
-
 class mov_Form(Form):
     movTitle = StringField('Title of Movie', [validators.Length(min=1, max=100)])
-
 
 class reviewForm(Form):
     rating = IntegerField('Rating', [validators.NumberRange(min=0, max=10)])
     review = StringField('Review', [validators.Length(min=1, max=10000)])
-
 
 # Movies
 @app.route('/movie', methods=['GET', 'POST'])
@@ -226,6 +227,11 @@ def add_movie():
         budget = form.budget.data
         box_office = form.box_office.data
 
+        check_query = "SELECT movieId FROM Movies WHERE title='%s'" % (title)
+        check = execute_query(db_connection, check_query).fetchone()
+        if check:
+            return redirect(url_for('view_rating', movieId=check[0]))
+
         movie_query = 'INSERT INTO Movies (title,budget,genre,boxOffice,year) VALUES (%s,%s,%s,%s,%s)'
         data = (title, budget, genre, box_office, release_year)
         execute_query(db_connection, movie_query, data)
@@ -233,7 +239,6 @@ def add_movie():
         return redirect(url_for('movie'))
 
     return render_template('add_movie.html', form=form)
-
 
 # Update movie
 @app.route('/up_mov', methods=['POST'])
@@ -257,7 +262,6 @@ def up_mov():
         print("did not work")
         return redirect(request.referrer)
 
-
 # Display user reviews
 @app.route('/reviews', methods=['GET', 'POST'])
 def user_reviews():
@@ -271,7 +275,6 @@ def user_reviews():
         results = execute_query(db_connection, rating_query).fetchall()
         return render_template('reviews.html', rows=results, form=form)
     return render_template('reviews.html', form=form)
-
 
 # add a new review
 @app.route('/add_review/<int:movieId>', methods=['GET', 'POST'])
@@ -290,7 +293,6 @@ def add_review(movieId):
         return redirect(url_for('view_rating', movieId=movieId))
     return render_template('add_review.html', form=form)
 
-
 # view ratings of individual movie
 @app.route('/view_rating/<int:movieId>')
 def view_rating(movieId):
@@ -303,7 +305,6 @@ def view_rating(movieId):
     results1 = execute_query(db_connection, view_query)
     results2 = execute_query(db_connection, selectedmovie)
     return render_template('view_rating.html', results1=results1, results2=results2, id=movieId)
-
 
 # Delete Review
 @app.route('/del_rev', methods=['POST'])
@@ -320,7 +321,6 @@ def del_rev():
         print('movieID: ', request.form['mov'])
         print('username: ', request.form['user'])
         return redirect(request.referrer)
-
 
 # Update Review
 @app.route('/up_rev', methods=['POST'])
@@ -339,7 +339,6 @@ def up_rev():
         print("did not work")
         return redirect(request.referrer)
 
-
 # Display list of directors
 @app.route('/director', methods=['GET', 'POST'])
 def director():
@@ -352,7 +351,6 @@ def director():
         dir_results = execute_query(db_connection, dir_query).fetchall()
         return render_template('director.html', rows=dir_results, form=form)
     return render_template('director.html', form=form)
-
 
 # Display individual director
 @app.route('/director/id=<int:directorId>')
@@ -372,7 +370,6 @@ def view_dir(directorId):
     name = name[0]
     return render_template('view_director.html', mov_rows=mov_results, act_rows=act_results, name=name, id=directorId)
 
-
 # Add Director
 @app.route('/add_director', methods=['GET', 'POST'])
 def add_director():
@@ -381,6 +378,13 @@ def add_director():
     if request.method == 'POST':
         fname = form.fname.data
         lname = form.lname.data
+
+        #check if director is already in database
+        check_query = "SELECT directorId FROM Directors WHERE firstName='%s' AND lastName='%s'" % (fname, lname)
+        check = execute_query(db_connection, check_query).fetchone()
+        if check:
+            return redirect(url_for('view_dir', directorId=check[0]))
+
         dir_query = 'INSERT INTO Directors (lastName, firstName) VALUES (%s,%s)'
         data = (lname, fname)
         execute_query(db_connection, dir_query, data)
@@ -393,43 +397,55 @@ def add_director():
 
     return render_template('add_director.html', form=form)
 
-
 # Add Movie to Director's list
 @app.route('/add_dir_mov/<int:directorId>', methods=['GET', 'POST'])
 def add_dir_mov(directorId):
     form = mov_Form(request.form)
     db_connection = connect_to_database()
+    mov_query = "SELECT title, movieId FROM Movies ORDER BY title"
+    movies = execute_query(db_connection, mov_query).fetchall()
     if request.method == 'POST':
-        movTitle = form.movTitle.data
-        dm_query = "INSERT INTO DirMovies (directorId, movieId) VALUES (%s,(SELECT movieID FROM Movies WHERE title='%s'))" % (
-        directorId, movTitle)
+        movieId = request.form['movie']
+
+        #check if relationship already exists
+        check_query = "SELECT movieId FROM DirMovies WHERE movieId=%s" % (movieId)
+        check = execute_query(db_connection, check_query).fetchone()
+        if check:
+            return redirect(url_for('view_dir', directorId=directorId))
+
+        dm_query = "INSERT INTO DirMovies (directorId, movieId) VALUES (%s,%s)" % (directorId, movieId)
         try:
             execute_query(db_connection, dm_query)
             return redirect(url_for('view_dir', directorId=directorId))
         except:
             return render_template('error_add_movie.html')
 
-    return render_template('add_dir_mov.html', form=form)
-
+    return render_template('add_dir_mov.html', form=form, movies=movies)
 
 # Add actor to director
 @app.route('/add_dir_act/<int:directorId>', methods=['GET', 'POST'])
 def add_dir_act(directorId):
     form = castForm(request.form)
     db_connection = connect_to_database()
+    act_query= "SELECT CONCAT(firstName, ' ', lastName), actorId FROM Actors ORDER BY lastName"
+    actors = execute_query(db_connection, act_query).fetchall()
     if request.method == 'POST':
-        fname = form.fname.data
-        lname = form.lname.data
-        ad_query = "INSERT INTO DirActors (directorId, actorId) VALUES (%s,(SELECT actorId FROM Actors WHERE firstName = '%s' AND lastName = '%s'))" % (
-        directorId, fname, lname)
+        actorId = request.form['actors']
+
+        # check if relationship already exists
+        check_query = "SELECT actorId FROM DirActors WHERE actorId=%s AND directorId=%s" % (actorId, directorId)
+        check = execute_query(db_connection, check_query).fetchone()
+        if check:
+            return redirect(url_for('view_act', actorId=actorId))
+
+        ad_query = "INSERT INTO DirActors (actorId, directorId) VALUES (%s,%s)" % (actorId, directorId)
         try:
             execute_query(db_connection, ad_query)
             return redirect(url_for('view_dir', directorId=directorId))
         except:
             return render_template('error_add_actor.html')
 
-    return render_template('add_dir_act.html', form=form)
-
+    return render_template('add_dir_act.html', form=form, actors=actors)
 
 # Delete Director
 @app.route('/del_dir', methods=['POST'])
@@ -446,7 +462,6 @@ def del_dir():
     except:
         return redirect(request.referrer)
 
-
 # Delete Actor from Director
 @app.route('/director/del_act_dir', methods=['POST'])
 def del_act_dir():
@@ -457,7 +472,6 @@ def del_act_dir():
         return redirect(request.referrer)
     except:
         return redirect(request.referrer)
-
 
 # Update Director
 @app.route('/up_dir', methods=['POST'])
@@ -474,7 +488,6 @@ def up_dir():
         print("did not work")
         return redirect(request.referrer)
 
-
 # Display list of actors
 @app.route('/actor', methods=['GET', 'POST'])
 def actor():
@@ -486,7 +499,6 @@ def actor():
         act_query = "SELECT actorId, firstName, lastName FROM Actors ORDER BY lastName"
         act_results = execute_query(db_connection, act_query).fetchall()
         return render_template('actor.html', rows=act_results, form=form)
-
 
 # Display individual actor
 @app.route('/actor/id=<int:actorId>')
@@ -509,7 +521,6 @@ def view_act(actorId):
 
     return render_template('view_actor.html', mov_rows=mov_results, dir_rows=dir_results, name=name, id=actorId)
 
-
 # Add a new actor
 @app.route('/add_actor', methods=['GET', 'POST'])
 def add_actor():
@@ -518,8 +529,12 @@ def add_actor():
     if request.method == 'POST':
         fname = form.fname.data
         lname = form.lname.data
-        # director = form.director.data
-        # actor = form.actor.data
+
+        #check if actor already in database
+        check_query = "SELECT actorId FROM Actors WHERE firstName='%s' AND lastName='%s'" % (fname, lname)
+        check = execute_query(db_connection, check_query).fetchone()
+        if check:
+            return redirect(url_for('view_act', actorId=check[0]))
 
         act_query = 'INSERT INTO Actors (lastName, firstName) VALUES (%s,%s)'
         data = (lname, fname)
@@ -533,24 +548,30 @@ def add_actor():
 
     return render_template('add_actor.html', form=form)
 
-
 # Add Movie to Actor
 @app.route('/add_act_mov/<int:actorId>', methods=['GET', 'POST'])
 def add_act_mov(actorId):
     form = mov_Form(request.form)
     db_connection = connect_to_database()
+    mov_query = "SELECT title, movieId FROM Movies ORDER BY title"
+    movies = execute_query(db_connection, mov_query).fetchall()
     if request.method == 'POST':
-        movTitle = form.movTitle.data
-        am_query = "INSERT INTO ActMovies (actorId, movieId) VALUES (%s,(SELECT movieID FROM Movies WHERE title='%s'))" % (
-        actorId, movTitle)
+        movieId = request.form['movie']
+
+        # check if relationship already exists
+        check_query = "SELECT movieId FROM ActMovies WHERE actorId=%s AND movieId=%s" % (actorId, movieId)
+        check = execute_query(db_connection, check_query).fetchone()
+        if check:
+            return redirect(url_for('view_act', actorId=actorId))
+
+        am_query = "INSERT INTO ActMovies (actorId, movieId) VALUES (%s, %s)" % (actorId, movieId)
         try:
             execute_query(db_connection, am_query)
-
             return redirect(url_for('view_act', actorId=actorId))
         except:
             return render_template('error_add_movie.html')
 
-    return render_template('add_act_mov.html', form=form)
+    return render_template('add_act_mov.html', form=form, movies=movies)
 
 
 # Add Director to Actor
@@ -558,18 +579,25 @@ def add_act_mov(actorId):
 def add_act_dir(actorId):
     form = castForm(request.form)
     db_connection = connect_to_database()
+    dir_query = "SELECT CONCAT(firstName, ' ', lastName), directorId FROM Directors ORDER BY lastName"
+    directors = execute_query(db_connection, dir_query).fetchall()
     if request.method == 'POST':
-        fname = form.fname.data
-        lname = form.lname.data
-        ad_query = "INSERT INTO DirActors (actorId, directorId) VALUES (%s,(SELECT directorId FROM Directors WHERE firstName = '%s' AND lastName = '%s'))" % (
-        actorId, fname, lname)
+        directorId = request.form['directors']
+
+        # check if relationship already exists
+        check_query = "SELECT directorId FROM DirActors WHERE actorId=%s AND directorId=%s" % (actorId, directorId)
+        check = execute_query(db_connection, check_query).fetchone()
+        if check:
+            return redirect(url_for('view_act', actorId=actorId))
+
+        ad_query = "INSERT INTO DirActors (actorId, directorId) VALUES (%s, %s)" % (actorId, directorId)
         try:
             execute_query(db_connection, ad_query)
             return redirect(url_for('view_act', actorId=actorId))
         except:
             return render_template('error_add_director.html')
 
-    return render_template('add_act_dir.html', form=form)
+    return render_template('add_act_dir.html', form=form, directors=directors)
 
 
 # Delete Director from Actor
